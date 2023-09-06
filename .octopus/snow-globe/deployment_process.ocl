@@ -34,7 +34,7 @@ step "create-web-app-service" {
             Octopus.Action.Script.ScriptSource = "Inline"
             OctopusUseBundledTooling = "False"
         }
-        worker_pool = "hosted-windows"
+        worker_pool = "hosted-ubuntu"
 
         container {
             feed = "docker-hub"
@@ -59,6 +59,7 @@ step "send-completion-notification" {
             Octopus.Action.Email.IsHtml = "True"
             Octopus.Action.Email.Subject = "Release #{Octopus.Release.Number} has been deployed to #{Octopus.Environment.Name}"
             Octopus.Action.Email.To = "#{Octopus.Deployment.CreatedBy.EmailAddress}"
+            Octopus.Action.RunOnServer = "false"
         }
     }
 }
