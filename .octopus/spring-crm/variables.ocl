@@ -3,3 +3,7 @@ variable "Project.Azure.WorkerPool" {
 
     value "hosted-ubuntu" {}
 }
+
+variable "Conjur.DataKey" {
+    value "Test" {}
+}
