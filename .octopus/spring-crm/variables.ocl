@@ -1,0 +1,5 @@
+variable "Project.Azure.WorkerPool" {
+    type = "WorkerPool"
+
+    value "azure-worker-pool" {}
+}
