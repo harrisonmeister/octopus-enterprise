@@ -9,3 +9,11 @@ variable "Project.Azure.Account" {
 
     value "tenants-azure-subscription" {}
 }
+
+variable "Project.Azure.SharedResources.ResourceGroupLocation" {
+    value "westeurope" {}
+}
+
+variable "Project.Azure.SharedResources.ResourceGroupName" {
+    value "unicredit-demo-shared" {}
+}
