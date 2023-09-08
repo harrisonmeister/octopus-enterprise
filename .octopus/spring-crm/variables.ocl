@@ -37,3 +37,11 @@ variable "Project.MySql.Server.Name" {
 variable "Project.Database.ConnectionString" {
     value "jdbc:mysql://#{Project.MySql.Server.Name}:3306/#{Project.Database.Name}?useSSL=true&serverTimezone=UTC&verifyServerCertificate=false&enabledTLSProtocols=TLSv1.2" {}
 }
+
+variable "Project.WebSphere.Server.Name" {
+    value "spring-crm" {}
+}
+
+variable "Project.Installation.Directory" {
+    value "C:\\ProgramData\\chocolatey\\lib\\was-liberty-java-ee8-web-profile\\wlp\\usr\\servers\\#{Project.WebSphere.Server.Name}\\dropins" {}
+}
