@@ -45,3 +45,7 @@ variable "Project.WebSphere.Server.Name" {
 variable "Project.Installation.Directory" {
     value "C:\\ProgramData\\chocolatey\\lib\\was-liberty-java-ee8-web-profile\\wlp\\usr\\servers\\#{Project.WebSphere.Server.Name}\\dropins" {}
 }
+
+variable "Project.Installation.DNS" {
+    value "http://#{Octopus.Machine.Name}.cloudapp.azure.com:9080/springcrm_#{Global.Environment.Abbr}_#{Octopus.Deployment.Tenant.Name | Replace \" \" | Replace \"-\" \"_\"}" {}
+}
