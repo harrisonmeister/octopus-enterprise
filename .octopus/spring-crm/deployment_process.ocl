@@ -59,3 +59,53 @@ step "mysql-create-database-if-not-exists" {
         worker_pool = "hosted-ubuntu"
     }
 }
+
+step "database-changes-approval" {
+    name = "Database changes Approval"
+
+    action {
+        action_type = "Octopus.Manual"
+        properties = {
+            Octopus.Action.Manual.BlockConcurrentDeployments = "False"
+            Octopus.Action.Manual.Instructions = "Please ensure that any database changes included in the deployment of this release are reviewed by either a DBA or the QA team and approved here."
+            Octopus.Action.Manual.ResponsibleTeamIds = "global/demo-qa-team"
+        }
+    }
+}
+
+step "deploy-spring-crm-database-changes-using-flyway" {
+    name = "Deploy spring-crm database changes using Flyway"
+
+    action {
+        properties = {
+            Flyway.Authentication.Method = "usernamepassword"
+            Flyway.Command.BaseLineOnMigrate = "false"
+            Flyway.Command.OutOfOrder = "false"
+            Flyway.Command.SkipExecutingMigrations = "false"
+            Flyway.Command.Target = "latest"
+            Flyway.Command.Value = "migrate"
+            Flyway.License.Key = "#{Project.MySql.Flyway.Key}"
+            Flyway.Package.Value = "{\"PackageId\":\"petclinic.web\",\"FeedId\":\"octopus-server-built-in\"}"
+            Octopus.Action.Template.Id = "ActionTemplates-2549"
+            Octopus.Action.Template.Version = "11"
+            OctopusUseBundledTooling = "False"
+        }
+        worker_pool = "hosted-ubuntu"
+
+        container {
+            feed = "docker-hub"
+            image = "octopuslabs/flyway-enterprise-workertools:9.21.1-ubuntu.2204"
+        }
+
+        packages "Flyway.Package.Value" {
+            acquisition_location = "Server"
+            feed = "octopus-server-built-in"
+            package_id = "petclinic.web"
+            properties = {
+                Extract = "True"
+                PackageParameterName = "Flyway.Package.Value"
+                SelectionMode = "deferred"
+            }
+        }
+    }
+}
