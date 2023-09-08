@@ -57,5 +57,5 @@ variable "Project.Notification.DeploymentCompletedTitle" {
 }
 
 variable "Project.MySql.Admin.UserName" {
-    value "OctoAdmin@#{Project.MySql.Server}.mysql.database.azure.com.microsoft.com" {}
+    value "OctoAdmin" {}
 }
