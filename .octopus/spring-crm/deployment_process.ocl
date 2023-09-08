@@ -1,0 +1,61 @@
+step "notify-deployment-starting" {
+    name = "Notify Deployment starting"
+
+    action {
+        properties = {
+            Octopus.Action.Template.Id = "ActionTemplates-2547"
+            Octopus.Action.Template.Version = "15"
+            ssn_Channel = "#{Project.Notification.SlackChannel}"
+            ssn_Color = "good"
+            ssn_HookUrl = "#{Project.Notification.SlackWebhookUrl}"
+            ssn_IconUrl = "https://octopus.com/content/resources/favicon.png"
+            ssn_Title = "#{Project.Notification.DeploymentStartedTitle}"
+            ssn_Username = "Octopus Deploy"
+        }
+        worker_pool = "hosted-ubuntu"
+    }
+}
+
+step "cyberark-conjur-retrieve-secrets" {
+    name = "CyberArk Conjur - Retrieve Secrets"
+    properties = {
+        Octopus.Action.TargetRoles = "conjur-server"
+    }
+
+    action {
+        properties = {
+            CyberArk.Conjur.RetrieveSecrets.Account = "#{Conjur.Account.Name}"
+            CyberArk.Conjur.RetrieveSecrets.ApiKey = "#{Conjur.RetrieveSecrets.Host.ApiKey}"
+            CyberArk.Conjur.RetrieveSecrets.Login = "#{Conjur.RetrieveSecrets.Host.Account}"
+            CyberArk.Conjur.RetrieveSecrets.PrintVariableNames = "False"
+            CyberArk.Conjur.RetrieveSecrets.SecretVariables = <<-EOT
+                OctoSecrets/credentials/username | username
+                OctoSecrets/credentials/password | password
+                OctoSecrets/ssl/private_key  | ssl_key
+                EOT
+            CyberArk.Conjur.RetrieveSecrets.Url = "#{Conjur.Server.Url}"
+            Octopus.Action.RunOnServer = "false"
+            Octopus.Action.Template.Id = "ActionTemplates-2522"
+            Octopus.Action.Template.Version = "1"
+        }
+    }
+}
+
+step "mysql-create-database-if-not-exists" {
+    name = "MySQL - Create Database If Not Exists"
+
+    action {
+        properties = {
+            createDatabaseName = "#{Project.MySql.Database.Name}"
+            createMySQLServerName = "#{Project.MySql.Server.Name}"
+            createPort = "3306"
+            createUsername = "#{Project.MySql.Admin.UserName}"
+            createUserPassword = "#{Project.MySql.Admin.Password}"
+            createUseSSL = "True"
+            mySqlAuthenticationMethod = "usernamepassword"
+            Octopus.Action.Template.Id = "ActionTemplates-2548"
+            Octopus.Action.Template.Version = "7"
+        }
+        worker_pool = "hosted-ubuntu"
+    }
+}
