@@ -12,16 +12,6 @@ variable "Project.Notification.TaskLink" {
     value "#{Octopus.Web.ServerUri}/app#/#{Octopus.Space.Id}/tasks/#{Octopus.Task.Id}" {}
 }
 
-variable "Project.Notification.DeploymentStartedTitle" {
-    value {
-        value = <<-EOT
-                :sleuth_or_spy: #{Octopus.Project.Name} `#{Octopus.Release.Number}` to `#{Octopus.Environment.Name}` has started for `#{Octopus.Deployment.Tenant.Name}`
-                
-                #{Project.Notification.TaskLink}
-                EOT
-    }
-}
-
 variable "Project.MySql.Database.Name" {
     value "springcrm_#{Global.Environment.Abbr}_#{Octopus.Deployment.Tenant.Name | Replace \" \" | Replace \"-\" \"_\"}" {}
 }
@@ -48,4 +38,24 @@ variable "Project.Installation.Directory" {
 
 variable "Project.Installation.DNS" {
     value "http://#{Octopus.Machine.Name}.cloudapp.azure.com:9080/springcrm_#{Global.Environment.Abbr}_#{Octopus.Deployment.Tenant.Name | Replace \" \" | Replace \"-\" \"_\"}" {}
+}
+
+variable "Project.Notification.DeploymentStartedTitle" {
+    value {
+        value = <<-EOT
+                :sleuth_or_spy: #{Octopus.Project.Name} `#{Octopus.Release.Number}` to `#{Octopus.Environment.Name}` for `#{Octopus.Deployment.Tenant.Name}`  has started.
+                
+                #{Project.Notification.TaskLink}
+                EOT
+    }
+}
+
+variable "Project.Notification.DeploymentCompletedTitle" {
+    value {
+        value = <<-EOT
+                :sleuth_or_spy: #{Octopus.Project.Name} `#{Octopus.Release.Number}` to `#{Octopus.Environment.Name}` for `#{Octopus.Deployment.Tenant.Name}`  has finished running.
+                
+                #{Project.Notification.TaskLink}
+                EOT
+    }
 }
