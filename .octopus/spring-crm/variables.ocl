@@ -16,10 +16,6 @@ variable "Project.MySql.Database.Name" {
     value "springcrm_#{Global.Environment.Abbr}_#{Octopus.Deployment.Tenant.Name | Replace \" \" | Replace \"-\" \"_\"}" {}
 }
 
-variable "Project.MySql.Admin.UserName" {
-    value "OctoAdmin" {}
-}
-
 variable "Project.MySql.Server.Name" {
     value "#{Project.MySql.Server}.mysql.database.azure.com" {}
 }
@@ -58,4 +54,8 @@ variable "Project.Notification.DeploymentCompletedTitle" {
                 #{Project.Notification.TaskLink}
                 EOT
     }
+}
+
+variable "Project.MySql.Admin.UserName" {
+    value "OctoAdmin@#{Project.MySql.Server}.mysql.database.azure.com.microsoft.com" {}
 }
