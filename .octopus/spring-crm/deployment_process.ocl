@@ -168,6 +168,7 @@ step "deploy-spring-crm-to-websphere-liberty" {
             Octopus.Action.Package.JavaArchiveCompression = "True"
             Octopus.Action.Package.PackageId = "petclinic.web"
             Octopus.Action.Package.UseCustomInstallationDirectory = "True"
+            Octopus.Action.RunOnServer = "false"
             Octopus.Action.SubstituteInFiles.TargetFiles = "WEB-INF/classes/spring/datasource-config.xml"
         }
         worker_pool_variable = ""
@@ -180,5 +181,23 @@ step "deploy-spring-crm-to-websphere-liberty" {
                 SelectionMode = "immediate"
             }
         }
+    }
+}
+
+step "notify-deployment-completed" {
+    name = "Notify Deployment completed"
+
+    action {
+        properties = {
+            Octopus.Action.Template.Id = "ActionTemplates-2547"
+            Octopus.Action.Template.Version = "15"
+            ssn_Channel = "#{Project.Notification.SlackChannel}"
+            ssn_Color = "good"
+            ssn_HookUrl = "#{Project.Notification.SlackWebhookUrl}"
+            ssn_IconUrl = "https://octopus.com/content/resources/favicon.png"
+            ssn_Title = "#{Project.Notification.DeploymentCompletedTitle}"
+            ssn_Username = "Octopus Deploy"
+        }
+        worker_pool = "hosted-ubuntu"
     }
 }
