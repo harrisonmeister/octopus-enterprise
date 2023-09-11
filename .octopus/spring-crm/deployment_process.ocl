@@ -164,7 +164,7 @@ step "deploy-spring-crm-to-websphere-liberty" {
         action_type = "Octopus.JavaArchive"
         properties = {
             Octopus.Action.CustomScripts.PostDeploy.ps1 = "Write-Highlight \"[Spring CRM #{Octopus.Deployment.Tenant.Name}-#{Octopus.Environment.Name}](#{Project.Installation.DNS})\""
-            Octopus.Action.EnabledFeatures = "Octopus.Features.CustomScripts,Octopus.Features.SubstituteInFiles"
+            Octopus.Action.EnabledFeatures = "Octopus.Features.CustomScripts,Octopus.Features.JsonConfigurationVariables"
             Octopus.Action.JavaArchive.DeployExploded = "False"
             Octopus.Action.Package.CustomInstallationDirectory = "#{Project.Installation.Directory}"
             Octopus.Action.Package.CustomInstallationDirectoryShouldBePurgedBeforeDeployment = "False"
@@ -172,10 +172,10 @@ step "deploy-spring-crm-to-websphere-liberty" {
             Octopus.Action.Package.DownloadOnTentacle = "False"
             Octopus.Action.Package.FeedId = "octopus-server-built-in"
             Octopus.Action.Package.JavaArchiveCompression = "True"
+            Octopus.Action.Package.JsonConfigurationVariablesTargets = "WEB-INF/classes/spring/datasource-config.xml"
             Octopus.Action.Package.PackageId = "petclinic.web"
             Octopus.Action.Package.UseCustomInstallationDirectory = "True"
             Octopus.Action.RunOnServer = "false"
-            Octopus.Action.SubstituteInFiles.TargetFiles = "WEB-INF/classes/spring/datasource-config.xml"
         }
         worker_pool_variable = ""
 
