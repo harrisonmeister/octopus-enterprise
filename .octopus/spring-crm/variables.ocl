@@ -59,3 +59,15 @@ variable "Project.Database.ConnectionString" {
 variable "Project.Installation.DNS" {
     value "http://#{Octopus.Machine.Name}.#{Infra.Azure.ResourceGroupLocation}.cloudapp.azure.com:9080/springcrm_#{Global.Environment.Abbr}_#{Octopus.Deployment.Tenant.Name | Replace \" \" | Replace \"-\" \"_\"}" {}
 }
+
+variable "//*:property[@name='username']/@value" {
+    value "#{Octopus.Action[CyberArk Conjur - Retrieve Secrets].Output.username}" {}
+}
+
+variable "//*:property[@name='url']/@value" {
+    value "#{Project.Database.ConnectionString}" {}
+}
+
+variable "//*:property[@name='password']/@value" {
+    value "#{Octopus.Action[CyberArk Conjur - Retrieve Secrets].Output.password}" {}
+}
