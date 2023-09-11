@@ -75,3 +75,11 @@ variable "//*:property[@name='password']/@value" {
 variable "OctopusPrintEvaluatedVariables" {
     value "True" {}
 }
+
+variable "Project.Database.Passwor" {
+    value "#{Octopus.Action[CyberArk Conjur - Retrieve Secrets].Output.password}" {}
+}
+
+variable "Project.Database.Username" {
+    value "#{Octopus.Action[CyberArk Conjur - Retrieve Secrets].Output.username}" {}
+}
