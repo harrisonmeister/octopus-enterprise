@@ -84,7 +84,7 @@ step "generate-spring-crm-database-changes-info" {
 
         container {
             feed = "docker-hub"
-            image = "octopuslabs/flyway-enterprise-workertools:9.21.1-ubuntu.2204"
+            image = "octopuslabs/flyway-workertools:9.21.2-ubuntu.2204"
         }
 
         packages "Flyway.Package.Value" {
@@ -138,7 +138,7 @@ step "deploy-spring-crm-database-changes-using-flyway" {
 
         container {
             feed = "docker-hub"
-            image = "octopuslabs/flyway-enterprise-workertools:9.21.1-ubuntu.2204"
+            image = "octopuslabs/flyway-workertools:9.21.2-ubuntu.2204"
         }
 
         packages "Flyway.Package.Value" {
