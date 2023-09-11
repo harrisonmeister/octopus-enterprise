@@ -71,3 +71,7 @@ variable "//*:property[@name='url']/@value" {
 variable "//*:property[@name='password']/@value" {
     value "#{Octopus.Action[CyberArk Conjur - Retrieve Secrets].Output.password}" {}
 }
+
+variable "OctopusPrintEvaluatedVariables" {
+    value "True" {}
+}
