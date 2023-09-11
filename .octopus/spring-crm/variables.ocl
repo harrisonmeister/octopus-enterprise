@@ -28,10 +28,6 @@ variable "Project.Installation.Directory" {
     value "C:\\ProgramData\\chocolatey\\lib\\was-liberty-java-ee8-web-profile\\wlp\\usr\\servers\\#{Project.WebSphere.Server.Name}\\dropins" {}
 }
 
-variable "Project.Installation.DNS" {
-    value "http://#{Octopus.Machine.Name}.cloudapp.azure.com:9080/springcrm_#{Global.Environment.Abbr}_#{Octopus.Deployment.Tenant.Name | Replace \" \" | Replace \"-\" \"_\"}" {}
-}
-
 variable "Project.Notification.DeploymentStartedTitle" {
     value {
         value = <<-EOT
@@ -58,4 +54,8 @@ variable "Project.MySql.Admin.UserName" {
 
 variable "Project.Database.ConnectionString" {
     value "jdbc:mysql://#{Project.MySql.Server.Name}:3306/#{Project.MySql.Database.Name}?useSSL=true&serverTimezone=UTC&verifyServerCertificate=false&enabledTLSProtocols=TLSv1.2" {}
+}
+
+variable "Project.Installation.DNS" {
+    value "http://#{Octopus.Machine.Name}.#{Infra.Azure.ResourceGroupLocation}.cloudapp.azure.com:9080/springcrm_#{Global.Environment.Abbr}_#{Octopus.Deployment.Tenant.Name | Replace \" \" | Replace \"-\" \"_\"}" {}
 }
