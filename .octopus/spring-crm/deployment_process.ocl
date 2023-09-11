@@ -78,8 +78,14 @@ step "generate-spring-crm-database-changes-info" {
             Flyway.Target.Url = "#{Project.Database.ConnectionString}"
             Octopus.Action.Template.Id = "ActionTemplates-2549"
             Octopus.Action.Template.Version = "11"
+            OctopusUseBundledTooling = "False"
         }
         worker_pool = "hosted-ubuntu"
+
+        container {
+            feed = "docker-hub"
+            image = "octopuslabs/flyway-enterprise-workertools:9.21.1-ubuntu.2204"
+        }
 
         packages "Flyway.Package.Value" {
             acquisition_location = "Server"
