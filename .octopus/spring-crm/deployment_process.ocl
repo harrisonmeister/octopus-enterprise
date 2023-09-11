@@ -27,7 +27,7 @@ step "cyberark-conjur-retrieve-secrets" {
             CyberArk.Conjur.RetrieveSecrets.Account = "#{Conjur.Account.Name}"
             CyberArk.Conjur.RetrieveSecrets.ApiKey = "#{Conjur.RetrieveSecrets.Host.ApiKey}"
             CyberArk.Conjur.RetrieveSecrets.Login = "#{Conjur.RetrieveSecrets.Host.Account}"
-            CyberArk.Conjur.RetrieveSecrets.PrintVariableNames = "False"
+            CyberArk.Conjur.RetrieveSecrets.PrintVariableNames = "True"
             CyberArk.Conjur.RetrieveSecrets.SecretVariables = <<-EOT
                 OctoSecrets/credentials/username | username
                 OctoSecrets/credentials/password | password
