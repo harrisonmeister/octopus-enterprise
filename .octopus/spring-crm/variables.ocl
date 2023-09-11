@@ -20,10 +20,6 @@ variable "Project.MySql.Server.Name" {
     value "#{Project.MySql.Server}.mysql.database.azure.com" {}
 }
 
-variable "Project.Database.ConnectionString" {
-    value "jdbc:mysql://#{Project.MySql.Server.Name}:3306/#{Project.Database.Name}?useSSL=true&serverTimezone=UTC&verifyServerCertificate=false&enabledTLSProtocols=TLSv1.2" {}
-}
-
 variable "Project.WebSphere.Server.Name" {
     value "spring-crm" {}
 }
@@ -58,4 +54,8 @@ variable "Project.Notification.DeploymentCompletedTitle" {
 
 variable "Project.MySql.Admin.UserName" {
     value "OctoAdmin" {}
+}
+
+variable "Project.Database.ConnectionString" {
+    value "jdbc:mysql://#{Project.MySql.Server.Name}:3306/#{Project.MySql.Database.Name}?useSSL=true&serverTimezone=UTC&verifyServerCertificate=false&enabledTLSProtocols=TLSv1.2" {}
 }
