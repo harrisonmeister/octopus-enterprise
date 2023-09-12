@@ -21,6 +21,7 @@ step "cyberark-conjur-retrieve-secrets" {
     properties = {
         Octopus.Action.TargetRoles = "conjur-server"
     }
+    start_trigger = "StartWithPrevious"
 
     action {
         properties = {
