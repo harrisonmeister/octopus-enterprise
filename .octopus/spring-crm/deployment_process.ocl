@@ -210,6 +210,7 @@ step "deploy-spring-crm-to-websphere-liberty" {
     properties = {
         Octopus.Action.TargetRoles = "springcrm-web"
     }
+    start_trigger = "StartWithPrevious"
 
     action {
         action_type = "Octopus.JavaArchive"
