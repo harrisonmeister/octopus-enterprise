@@ -156,6 +156,54 @@ step "deploy-spring-crm-database-changes-using-flyway" {
     }
 }
 
+step "deploy-load-balancer" {
+    name = "Deploy Load balancer"
+    properties = {
+        Octopus.Action.TargetRoles = "demo-k8s-cluster"
+    }
+
+    action {
+        action_type = "Octopus.KubernetesDeployRawYaml"
+        environments = ["test", "production"]
+        properties = {
+            Octopus.Action.Kubernetes.DeploymentTimeout = "180"
+            Octopus.Action.Kubernetes.ResourceStatusCheck = "False"
+            Octopus.Action.KubernetesContainers.CustomResourceYaml = <<-EOT
+                apiVersion: v1
+                kind: Service
+                metadata:
+                  name: '#{Project.LB.ServiceName}'
+                  namespace: '#{Project.Cluster.Namespace}'
+                spec:
+                  type: LoadBalancer
+                  ports:
+                    - name: http
+                      port: 80
+                      targetPort: #{Project.WebApp.HttpPort}
+                      protocol: TCP
+                    - name: https
+                      port: 443
+                      targetPort: #{Project.WebApp.HttpsPort}
+                      protocol: TCP
+                  selector:
+                    component: sc-web
+                    type: main
+                
+                EOT
+            Octopus.Action.KubernetesContainers.DeploymentWait = "NoWait"
+            Octopus.Action.KubernetesContainers.Namespace = "#{Project.Cluster.Namespace}"
+            Octopus.Action.Script.ScriptSource = "Inline"
+            OctopusUseBundledTooling = "False"
+        }
+        worker_pool = "hosted-ubuntu"
+
+        container {
+            feed = "docker-hub"
+            image = "octopusdeploy/worker-tools:5.2.0-ubuntu.22.04"
+        }
+    }
+}
+
 step "deploy-spring-crm-to-websphere-liberty" {
     name = "Deploy Spring CRM to WebSphere Liberty"
     properties = {
@@ -207,52 +255,5 @@ step "notify-deployment-completed" {
             ssn_Username = "Octopus Deploy"
         }
         worker_pool = "hosted-ubuntu"
-    }
-}
-
-step "deploy-load-balancer" {
-    name = "Deploy Load balancer"
-    properties = {
-        Octopus.Action.TargetRoles = "demo-k8s-cluster"
-    }
-
-    action {
-        action_type = "Octopus.KubernetesDeployRawYaml"
-        properties = {
-            Octopus.Action.Kubernetes.DeploymentTimeout = "180"
-            Octopus.Action.Kubernetes.ResourceStatusCheck = "False"
-            Octopus.Action.KubernetesContainers.CustomResourceYaml = <<-EOT
-                apiVersion: v1
-                kind: Service
-                metadata:
-                  name: '#{Project.LB.ServiceName}'
-                  namespace: '#{Project.Cluster.Namespace}'
-                spec:
-                  type: LoadBalancer
-                  ports:
-                    - name: http
-                      port: 80
-                      targetPort: #{Project.WebApp.HttpPort}
-                      protocol: TCP
-                    - name: https
-                      port: 443
-                      targetPort: #{Project.WebApp.HttpsPort}
-                      protocol: TCP
-                  selector:
-                    component: sc-web
-                    type: main
-                
-                EOT
-            Octopus.Action.KubernetesContainers.DeploymentWait = "NoWait"
-            Octopus.Action.KubernetesContainers.Namespace = "#{Project.Cluster.Namespace}"
-            Octopus.Action.Script.ScriptSource = "Inline"
-            OctopusUseBundledTooling = "False"
-        }
-        worker_pool = "hosted-ubuntu"
-
-        container {
-            feed = "docker-hub"
-            image = "octopusdeploy/worker-tools:5.2.0-ubuntu.22.04"
-        }
     }
 }
