@@ -64,6 +64,7 @@ step "generate-spring-crm-database-changes-info" {
     name = "Generate spring-crm database changes info"
 
     action {
+        environments = ["production"]
         properties = {
             Flyway.Authentication.Method = "usernamepassword"
             Flyway.Command.BaseLineOnMigrate = "false"
@@ -105,6 +106,7 @@ step "database-changes-approval" {
 
     action {
         action_type = "Octopus.Manual"
+        environments = ["production"]
         properties = {
             Octopus.Action.Manual.BlockConcurrentDeployments = "False"
             Octopus.Action.Manual.Instructions = "Please ensure that any database changes included in the deployment of this release are reviewed by either a DBA or the QA team and approved here."
