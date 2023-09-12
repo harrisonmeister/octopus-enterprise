@@ -75,3 +75,9 @@ variable "//*:property[@name='password']/@value" {
 variable "OctopusPrintEvaluatedVariables" {
     value "False" {}
 }
+
+variable "Octopus.Azure.Account" {
+    type = "AzureAccount"
+
+    value "demoazure-sub" {}
+}
