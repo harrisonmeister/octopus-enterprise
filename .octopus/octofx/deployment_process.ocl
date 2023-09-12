@@ -14,6 +14,7 @@ step "approve-production-release" {
             Octopus.Action.Manual.BlockConcurrentDeployments = "True"
             Octopus.Action.Manual.Instructions = "Please provide approval notes."
             Octopus.Action.Manual.ResponsibleTeamIds = "global/demo-presenters"
+            Octopus.Action.RunOnServer = "false"
         }
     }
 }
@@ -28,7 +29,7 @@ step "deploy-database-changes" {
             Octopus.Action.EnabledFeatures = "Octopus.Features.ConfigurationVariables"
             Octopus.Action.Package.AutomaticallyUpdateAppSettingsAndConnectionStrings = "True"
             Octopus.Action.Package.DownloadOnTentacle = "False"
-            Octopus.Action.Package.FeedId = "azure-devops-artifacts"
+            Octopus.Action.Package.FeedId = "octopussamples-artifactory-local-nuget-repo"
             Octopus.Action.Package.PackageId = "OctoFX.Database"
             Octopus.Action.Script.ScriptFileName = "Deploy.ps1"
             Octopus.Action.Script.ScriptSource = "Package"
@@ -37,7 +38,7 @@ step "deploy-database-changes" {
 
         packages {
             acquisition_location = "Server"
-            feed = "azure-devops-artifacts"
+            feed = "octopussamples-artifactory-local-nuget-repo"
             package_id = "OctoFX.Database"
             properties = {
                 SelectionMode = "immediate"
@@ -60,8 +61,9 @@ step "deploy-rate-service" {
             Octopus.Action.Package.AutomaticallyRunConfigurationTransformationFiles = "True"
             Octopus.Action.Package.AutomaticallyUpdateAppSettingsAndConnectionStrings = "True"
             Octopus.Action.Package.DownloadOnTentacle = "False"
-            Octopus.Action.Package.FeedId = "azure-devops-artifacts"
+            Octopus.Action.Package.FeedId = "octopussamples-artifactory-local-nuget-repo"
             Octopus.Action.Package.PackageId = "OctoFX.RateService"
+            Octopus.Action.RunOnServer = "false"
             Octopus.Action.WindowsService.CreateOrUpdateService = "True"
             Octopus.Action.WindowsService.Description = "OctoFX Rate Service"
             Octopus.Action.WindowsService.DesiredStatus = "Default"
@@ -75,7 +77,7 @@ step "deploy-rate-service" {
 
         packages {
             acquisition_location = "Server"
-            feed = "azure-devops-artifacts"
+            feed = "octopussamples-artifactory-local-nuget-repo"
             package_id = "OctoFX.RateService"
             properties = {
                 SelectionMode = "immediate"
@@ -146,14 +148,15 @@ step "deploy-trading-site" {
             Octopus.Action.Package.AutomaticallyRunConfigurationTransformationFiles = "True"
             Octopus.Action.Package.AutomaticallyUpdateAppSettingsAndConnectionStrings = "True"
             Octopus.Action.Package.DownloadOnTentacle = "False"
-            Octopus.Action.Package.FeedId = "azure-devops-artifacts"
+            Octopus.Action.Package.FeedId = "octopussamples-artifactory-local-nuget-repo"
             Octopus.Action.Package.PackageId = "OctoFX.TradingWebsite"
+            Octopus.Action.RunOnServer = "false"
         }
         worker_pool_variable = ""
 
         packages {
             acquisition_location = "Server"
-            feed = "azure-devops-artifacts"
+            feed = "octopussamples-artifactory-local-nuget-repo"
             package_id = "OctoFX.TradingWebsite"
             properties = {
                 SelectionMode = "immediate"
@@ -226,6 +229,7 @@ step "send-completion-notification" {
             Octopus.Action.Email.IsHtml = "True"
             Octopus.Action.Email.Subject = "Release #{Octopus.Release.Number} has been deployed to #{Octopus.Environment.Name}"
             Octopus.Action.Email.To = "#{Octopus.Deployment.CreatedBy.EmailAddress}"
+            Octopus.Action.RunOnServer = "false"
         }
     }
 }
