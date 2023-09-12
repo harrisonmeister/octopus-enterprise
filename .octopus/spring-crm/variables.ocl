@@ -109,6 +109,7 @@ variable "Project.CleanedEnvironmentName" {
 variable "Octopus.ServiceNow.ChangeRequest.Number" {
     value {
         description = "SNOW Change Request Number"
+        environment = ["production"]
 
         prompt {
             description = ""
