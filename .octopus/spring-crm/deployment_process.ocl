@@ -75,7 +75,7 @@ step "generate-spring-crm-database-changes-info" {
             Flyway.Database.User = "#{Project.MySql.Admin.UserName}"
             Flyway.Database.User.Password = "#{Project.MySql.Admin.Password}"
             Flyway.License.Key = "#{Project.MySql.Flyway.Key}"
-            Flyway.Package.Value = "{\"PackageId\":\"springcrm.flyway\",\"FeedId\":\"octopus-server-built-in\"}"
+            Flyway.Package.Value = "{\"PackageId\":\"springcrm.db\",\"FeedId\":\"octopus-server-built-in\"}"
             Flyway.Target.Url = "#{Project.Database.ConnectionString}"
             Octopus.Action.Template.Id = "ActionTemplates-2549"
             Octopus.Action.Template.Version = "11"
@@ -91,7 +91,7 @@ step "generate-spring-crm-database-changes-info" {
         packages "Flyway.Package.Value" {
             acquisition_location = "Server"
             feed = "octopus-server-built-in"
-            package_id = "springcrm.flyway"
+            package_id = "springcrm.db"
             properties = {
                 Extract = "True"
                 PackageParameterName = "Flyway.Package.Value"
@@ -130,7 +130,7 @@ step "deploy-spring-crm-database-changes-using-flyway" {
             Flyway.Database.User = "#{Project.MySql.Admin.UserName}"
             Flyway.Database.User.Password = "#{Project.MySql.Admin.Password}"
             Flyway.License.Key = "#{Project.MySql.Flyway.Key}"
-            Flyway.Package.Value = "{\"PackageId\":\"springcrm.flyway\",\"FeedId\":\"octopus-server-built-in\"}"
+            Flyway.Package.Value = "{\"PackageId\":\"springcrm.db\",\"FeedId\":\"octopus-server-built-in\"}"
             Flyway.Target.Url = "#{Project.Database.ConnectionString}"
             Octopus.Action.Template.Id = "ActionTemplates-2549"
             Octopus.Action.Template.Version = "11"
@@ -146,7 +146,7 @@ step "deploy-spring-crm-database-changes-using-flyway" {
         packages "Flyway.Package.Value" {
             acquisition_location = "Server"
             feed = "octopus-server-built-in"
-            package_id = "springcrm.flyway"
+            package_id = "springcrm.db"
             properties = {
                 Extract = "True"
                 PackageParameterName = "Flyway.Package.Value"
@@ -223,7 +223,7 @@ step "deploy-spring-crm-to-websphere-liberty" {
             Octopus.Action.Package.FeedId = "octopus-server-built-in"
             Octopus.Action.Package.JavaArchiveCompression = "True"
             Octopus.Action.Package.JsonConfigurationVariablesTargets = "WEB-INF/classes/spring/datasource-config.xml"
-            Octopus.Action.Package.PackageId = "petclinic.web"
+            Octopus.Action.Package.PackageId = "springcrm.web"
             Octopus.Action.Package.UseCustomInstallationDirectory = "True"
             Octopus.Action.RunOnServer = "false"
         }
@@ -232,7 +232,7 @@ step "deploy-spring-crm-to-websphere-liberty" {
         packages {
             acquisition_location = "Server"
             feed = "octopus-server-built-in"
-            package_id = "petclinic.web"
+            package_id = "springcrm.web"
             properties = {
                 SelectionMode = "immediate"
             }
