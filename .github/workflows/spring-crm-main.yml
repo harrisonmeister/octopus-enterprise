@@ -41,13 +41,13 @@ jobs:
           
       # Create artifacts folder
       - name: Create artifacts folder
-        run: mkdir "$GITHUB_WORKSPACE/artifacts"
+        run: mkdir artifacts
 
       # Build Spring CRM using maven
       - name: Build Spring CRM
         run: |
           mvn clean package -Pwar -Dproject.versionNumber=${{ steps.version-generator.outputs.version }} -DdatabaseServerName=${{ vars.DATABASE_SERVER_NAME }} -DdatabaseName=${{ vars.DATABASE_NAME }} -DskipTests -DdatabaseUserName=${{ vars.DATABASE_USER_NAME }} -DdatabaseUserPassword=${{ vars.DATABASE_USER_PASSWORD }}
-          cp "$GITHUB_WORKSPACE/spring-crm/target/springcrm.web.${{ steps.version-generator.outputs.version }}.war" "$GITHUB_WORKSPACE/spring-crm/artifacts/springcrm.web.${{ steps.version-generator.outputs.version }}.war"
+          cp "target/springcrm.web.${{ steps.version-generator.outputs.version }}.war" "artifacts/springcrm.web.${{ steps.version-generator.outputs.version }}.war"
  
       # Packagge Spring CRM DB scripts
       - name: Package database scripts for Octopus 🐙
