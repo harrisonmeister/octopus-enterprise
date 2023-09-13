@@ -1,0 +1,107 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and Package Spring CRM
+    runs-on: ubuntu-latest
+    working-directory: ./spring-crm
+    outputs:
+      version: ${{ steps.version-generator.outputs.version }}
+
+    env:
+      OCTOPUS_URL: ${{ vars.OCTOPUS_SERVER_URL }}
+      OCTOPUS_API_KEY: ${{ secrets.OCTOPUS_API_KEY }}
+      OCTOPUS_SPACE: ${{ vars.OCTOPUS_SERVER_SPACE }}  
+
+    steps:
+      - uses: actions/checkout@v3
+      # Set the build number
+      - name: Set Version number
+        id: version-generator
+        run: echo "version=$(date +'%Y.%m.%d').$GITHUB_RUN_NUMBER" >> $GITHUB_OUTPUT
+      
+      # Setup build to use Java
+      - name: Set up JDK11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+          
+      # Create artifacts folder
+      - name: Create artifacts folder
+        run: mkdir "$GITHUB_WORKSPACE/artifacts"
+
+      # Build Spring CRM using maven
+      - name: Build Spring CRM
+        run: |
+          mvn clean package -Pwar -Dproject.versionNumber=${{ steps.version-generator.outputs.version }} -DdatabaseServerName=${{ vars.DATABASE_SERVER_NAME }} -DdatabaseName=${{ vars.DATABASE_NAME }} -DskipTests -DdatabaseUserName=${{ vars.DATABASE_USER_NAME }} -DdatabaseUserPassword=${{ vars.DATABASE_USER_PASSWORD }}
+          cp "$GITHUB_WORKSPACE/target/springcrm.web.${{ steps.version-generator.outputs.version }}.war" "$GITHUB_WORKSPACE/artifacts/springcrm.web.${{ steps.version-generator.outputs.version }}.war"
+ 
+      # Packagge Spring CRM DB scripts
+      - name: Package database scripts for Octopus 🐙
+        uses: OctopusDeploy/create-zip-package-action@v3
+        with:
+          package_id: 'springcrm.db'
+          version: ${{ steps.version-generator.outputs.version }}
+          output_folder: artifacts
+          base_path: flyway
+          files: |
+            **/*.*
+      # Push packages to Octopus repository
+      - name: Push packages to Octopus 🐙
+        uses: OctopusDeploy/push-package-action@v3
+        with:  
+          packages: |
+            artifacts/springcrm.web.${{ steps.version-generator.outputs.version }}.war
+            artifacts/springcrm.db.${{ steps.version-generator.outputs.version }}.zip
+
+  create-octopus-release:
+      # Create Octopus release
+      name: Create Octopus Release 🐙
+      needs: [build]
+      runs-on: ubuntu-latest
+      
+      env:
+        OCTOPUS_URL: ${{ vars.OCTOPUS_SERVER_URL }}
+        OCTOPUS_API_KEY: ${{ secrets.OCTOPUS_API_KEY }}
+        OCTOPUS_SPACE: ${{ vars.OCTOPUS_SERVER_SPACE }}
+        
+      steps:
+      - uses: OctopusDeploy/create-release-action@v3
+        id: "create-release"
+        with:
+          project: "Spring CRM"
+          git_ref: "refs/heads/main"
+      outputs: 
+       release_number: ${{ steps.create-release.outputs.release_number }}
+
+  Deploy-Octopus-Release:
+      # Deploy Octopus release
+      name: Deploy to Development 🐙
+      needs: [build, create-octopus-release]
+      runs-on: ubuntu-latest
+      
+      env:
+        OCTOPUS_URL: ${{ vars.OCTOPUS_SERVER_URL }}
+        OCTOPUS_API_KEY: ${{ secrets.OCTOPUS_API_KEY }}
+        OCTOPUS_SPACE: ${{ vars.OCTOPUS_SERVER_SPACE }}
+        
+      steps:
+      - uses: OctopusDeploy/deploy-release-tenanted-action@v3
+        id: "deploy-release"
+        with:
+          project: "Spring CRM"
+          release_number: ${{ needs.create-octopus-release.outputs.release_number }}
+          environment: |
+            Development
+          tenants:
+            Internal
+      
