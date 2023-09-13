@@ -76,12 +76,6 @@ variable "OctopusPrintEvaluatedVariables" {
     value "False" {}
 }
 
-variable "Octopus.Azure.Account" {
-    type = "AzureAccount"
-
-    value "demoazure-sub" {}
-}
-
 variable "Project.LB.ServiceName" {
     value "springcrm-#{Octopus.Deployment.Tenant.Name | Replace \" \" | Replace \"-\" \"_\" | ToLower}-lb" {}
 }
@@ -119,4 +113,10 @@ variable "Octopus.ServiceNow.ChangeRequest.Number" {
             label = ""
         }
     }
+}
+
+variable "Project.Azure.Account" {
+    type = "AzureAccount"
+
+    value "demoazure-sub" {}
 }
