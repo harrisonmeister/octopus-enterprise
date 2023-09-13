@@ -12,7 +12,7 @@ jobs:
   build:
     name: Build and Package Spring CRM
     runs-on: ubuntu-latest
-    working-directory: ./spring-crm
+    
     outputs:
       version: ${{ steps.version-generator.outputs.version }}
 
@@ -26,6 +26,7 @@ jobs:
       # Set the build number
       - name: Set Version number
         id: version-generator
+        working-directory: ./spring-crm
         run: echo "version=$(date +'%Y.%m.%d').$GITHUB_RUN_NUMBER" >> $GITHUB_OUTPUT
       
       # Setup build to use Java
@@ -37,16 +38,19 @@ jobs:
           
       # Create artifacts folder
       - name: Create artifacts folder
+        working-directory: ./spring-crm
         run: mkdir "$GITHUB_WORKSPACE/artifacts"
 
       # Build Spring CRM using maven
       - name: Build Spring CRM
+        working-directory: ./spring-crm
         run: |
           mvn clean package -Pwar -Dproject.versionNumber=${{ steps.version-generator.outputs.version }} -DdatabaseServerName=${{ vars.DATABASE_SERVER_NAME }} -DdatabaseName=${{ vars.DATABASE_NAME }} -DskipTests -DdatabaseUserName=${{ vars.DATABASE_USER_NAME }} -DdatabaseUserPassword=${{ vars.DATABASE_USER_PASSWORD }}
           cp "$GITHUB_WORKSPACE/target/springcrm.web.${{ steps.version-generator.outputs.version }}.war" "$GITHUB_WORKSPACE/artifacts/springcrm.web.${{ steps.version-generator.outputs.version }}.war"
  
       # Packagge Spring CRM DB scripts
       - name: Package database scripts for Octopus 🐙
+        working-directory: ./spring-crm
         uses: OctopusDeploy/create-zip-package-action@v3
         with:
           package_id: 'springcrm.db'
@@ -57,6 +61,7 @@ jobs:
             **/*.*
       # Push packages to Octopus repository
       - name: Push packages to Octopus 🐙
+        working-directory: ./spring-crm
         uses: OctopusDeploy/push-package-action@v3
         with:  
           packages: |
