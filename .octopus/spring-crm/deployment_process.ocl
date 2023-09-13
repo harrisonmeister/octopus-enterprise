@@ -200,7 +200,7 @@ step "deploy-load-balancer" {
 
         container {
             feed = "docker-hub"
-            image = "octopusdeploy/worker-tools:5.2.0-ubuntu.22.04"
+            image = "octopuslabs/k8s-workertools:1.28.1-ubuntu.2204"
         }
     }
 }
