@@ -17,8 +17,8 @@ Spring CRM :: a demonstration site
     <title>Spring CRM :: a demonstration site</title>
 
     <%-- CSS generated from LESS --%>
-    <spring:url value="/resources/css/petclinic.css" var="petclinicCss"/>
-    <link href="${petclinicCss}" rel="stylesheet"/>
+    <spring:url value="/resources/css/springcrm.css" var="springcrmCss"/>
+    <link href="${springcrmCss}" rel="stylesheet"/>
 
 
     <%-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries --%>
