@@ -212,8 +212,9 @@ step "deploy-spring-crm-to-websphere-liberty" {
     }
     start_trigger = "StartWithPrevious"
 
-    action {
+    action "deploy-spring-crm-to-websphere-liberty" {
         action_type = "Octopus.JavaArchive"
+        name = "Deploy Spring CRM to WebSphere Liberty"
         properties = {
             Octopus.Action.CustomScripts.PostDeploy.ps1 = "Write-Highlight \"[Spring CRM #{Octopus.Deployment.Tenant.Name}-#{Octopus.Environment.Name}](#{Project.Installation.DNS})\""
             Octopus.Action.EnabledFeatures = "Octopus.Features.CustomScripts,Octopus.Features.JsonConfigurationVariables"
@@ -239,6 +240,17 @@ step "deploy-spring-crm-to-websphere-liberty" {
                 SelectionMode = "immediate"
             }
         }
+    }
+
+    action "smoke-test-api-endpoints" {
+        name = "Smoke test API endpoints"
+        properties = {
+            Octopus.Action.RunOnServer = "false"
+            Octopus.Action.Template.Id = "ActionTemplates-2563"
+            Octopus.Action.Template.Version = "1"
+            smoketest.baseURI = "#{Project.Installation.DNS}"
+        }
+        worker_pool_variable = ""
     }
 }
 
