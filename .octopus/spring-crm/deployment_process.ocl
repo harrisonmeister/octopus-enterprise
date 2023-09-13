@@ -45,6 +45,7 @@ step "cyberark-conjur-retrieve-secrets" {
 
 step "mysql-create-database-if-not-exists" {
     name = "MySQL - Create Database If Not Exists"
+    start_trigger = "StartWithPrevious"
 
     action {
         properties = {
