@@ -2,6 +2,7 @@ step "notify-deployment-starting" {
     name = "Notify Deployment starting"
 
     action {
+        environments = ["development"]
         properties = {
             Octopus.Action.Template.Id = "ActionTemplates-2547"
             Octopus.Action.Template.Version = "15"
@@ -258,6 +259,7 @@ step "notify-deployment-completed" {
     name = "Notify Deployment completed"
 
     action {
+        environments = ["development"]
         properties = {
             Octopus.Action.Template.Id = "ActionTemplates-2547"
             Octopus.Action.Template.Version = "15"
