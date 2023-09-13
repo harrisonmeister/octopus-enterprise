@@ -191,6 +191,7 @@ step "deploy-load-balancer" {
 step "deploy-spring-crm-to-websphere-liberty" {
     name = "Deploy Spring CRM to WebSphere Liberty"
     properties = {
+        Octopus.Action.MaxParallelism = "#{Project.Window.Size}"
         Octopus.Action.TargetRoles = "springcrm-web"
     }
     start_trigger = "StartWithPrevious"
