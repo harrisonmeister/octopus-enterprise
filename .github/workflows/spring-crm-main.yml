@@ -49,14 +49,14 @@ jobs:
           mvn clean package -Pwar -Dproject.versionNumber=${{ steps.version-generator.outputs.version }} -DdatabaseServerName=${{ vars.DATABASE_SERVER_NAME }} -DdatabaseName=${{ vars.DATABASE_NAME }} -DskipTests -DdatabaseUserName=${{ vars.DATABASE_USER_NAME }} -DdatabaseUserPassword=${{ vars.DATABASE_USER_PASSWORD }}
           cp "target/springcrm.web.${{ steps.version-generator.outputs.version }}.war" "artifacts/springcrm.web.${{ steps.version-generator.outputs.version }}.war"
  
-      # Packagge Spring CRM DB scripts
+      # Package Spring CRM DB scripts
       - name: Package database scripts for Octopus 🐙
         uses: OctopusDeploy/create-zip-package-action@v3
         with:
           package_id: 'springcrm.db'
           version: ${{ steps.version-generator.outputs.version }}
-          output_folder: artifacts
-          base_path: flyway
+          output_folder: ./spring-crm/artifacts
+          base_path: ./spring-crm/flyway
           files: |
             **/*.*
       # Push packages to Octopus repository
@@ -64,8 +64,8 @@ jobs:
         uses: OctopusDeploy/push-package-action@v3
         with:  
           packages: |
-            artifacts/springcrm.web.${{ steps.version-generator.outputs.version }}.war
-            artifacts/springcrm.db.${{ steps.version-generator.outputs.version }}.zip
+            ./spring-crm/artifacts/springcrm.web.${{ steps.version-generator.outputs.version }}.war
+            ./spring-crm/artifacts/springcrm.db.${{ steps.version-generator.outputs.version }}.zip
 
   create-octopus-release:
       # Create Octopus release
