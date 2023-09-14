@@ -133,6 +133,21 @@ variable "Project.Installation.DNS" {
     value "http://#{Octopus.Machine.Name}.#{Infra.Azure.ResourceGroupLocation}.cloudapp.azure.com:9080/springcrm_#{Global.Environment.Abbr}_#{Octopus.Deployment.Tenant.Name | Replace \" \" \"_\" | Replace \"-\" \"\"}" {}
 }
 
+variable "Application.Web.Portal.URL" {
+    value "http://websphere-d.westeurope.cloudapp.azure.com:9080/springcrm_#{Tenant.Name}" {
+        environment = ["development"]
+    }
+
+    value "http://websphere-t.westeurope.cloudapp.azure.com:9080/springcrm_#{Tenant.Name}" {
+        environment = ["test"]
+    }
+
+    value "http://websphere-p.westeurope.cloudapp.azure.com:9080/springcrm_#{Tenant.Name}" {
+        description = ""
+        environment = ["production"]
+    }
+}
+
 variable "Tenant.Name" {
-    value "#{Octopus.Deployment.Tenant.Name | Replace \" \" \"_\" | Replace \"-\" \"\"}" {}
+    value "#{Octopus.Deployment.Tenant.Name | Replace \" \" \"_\" | Replace \"-\" \"\" | ToLower}" {}
 }
