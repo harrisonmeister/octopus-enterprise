@@ -52,10 +52,6 @@ variable "Project.Database.ConnectionString" {
     value "jdbc:mysql://#{Project.MySql.Server.Name}:3306/#{Project.MySql.Database.Name}?useSSL=true&serverTimezone=UTC&verifyServerCertificate=false&enabledTLSProtocols=TLSv1.2" {}
 }
 
-variable "Project.Installation.DNS" {
-    value "http://#{Octopus.Machine.Name}.#{Infra.Azure.ResourceGroupLocation}.cloudapp.azure.com:9080/springcrm_#{Global.Environment.Abbr}_#{Octopus.Deployment.Tenant.Name | Replace \" \" | Replace \"-\" \"_\"}" {}
-}
-
 variable "//*:property[@name='username']/@value" {
     value "#{Octopus.Action[CyberArk Conjur - Retrieve Secrets].Output.username}" {}
 }
@@ -117,10 +113,6 @@ variable "Project.Azure.Account" {
     value "demoazure-sub" {}
 }
 
-variable "Tenant.Name" {
-    value "#{Octopus.Deployment.Tenant.Name | Replace \" \" | Replace \"-\" \"_\"}" {}
-}
-
 variable "Project.MySql.Database.Name" {
     value "springcrm_dev_#{Tenant.Name}" {
         environment = ["development"]
@@ -135,4 +127,12 @@ variable "Project.MySql.Database.Name" {
         description = ""
         environment = ["production"]
     }
+}
+
+variable "Project.Installation.DNS" {
+    value "http://#{Octopus.Machine.Name}.#{Infra.Azure.ResourceGroupLocation}.cloudapp.azure.com:9080/springcrm_#{Global.Environment.Abbr}_#{Octopus.Deployment.Tenant.Name | Replace \" \" \"_\" | Replace \"-\" \"\"}" {}
+}
+
+variable "Tenant.Name" {
+    value "#{Octopus.Deployment.Tenant.Name | Replace \" \" \"_\" | Replace \"-\" \"\"}" {}
 }
