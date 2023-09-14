@@ -120,3 +120,17 @@ variable "Project.Azure.Account" {
 
     value "demoazure-sub" {}
 }
+
+variable "Application.Log.Level" {
+    value "DEBUG" {
+        environment = ["development"]
+    }
+
+    value "INFO" {
+        environment = ["test"]
+    }
+
+    value "ERROR" {
+        environment = ["production"]
+    }
+}
