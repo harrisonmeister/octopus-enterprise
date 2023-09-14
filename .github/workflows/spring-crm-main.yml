@@ -105,5 +105,5 @@ jobs:
           environment: |
             Development
           tenants:
-            Internal
+            -Internal-
       
