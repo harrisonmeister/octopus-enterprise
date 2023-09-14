@@ -12,10 +12,6 @@ variable "Project.Notification.TaskLink" {
     value "#{Octopus.Web.ServerUri}/app#/#{Octopus.Space.Id}/tasks/#{Octopus.Task.Id}" {}
 }
 
-variable "Project.MySql.Database.Name" {
-    value "springcrm_#{Global.Environment.Abbr}_#{Octopus.Deployment.Tenant.Name | Replace \" \" | Replace \"-\" \"_\"}" {}
-}
-
 variable "Project.MySql.Server.Name" {
     value "#{Project.MySql.Server}.mysql.database.azure.com" {}
 }
@@ -121,16 +117,22 @@ variable "Project.Azure.Account" {
     value "demoazure-sub" {}
 }
 
-variable "Application.Log.Level" {
-    value "DEBUG" {
+variable "Tenant.Name" {
+    value "#{Octopus.Deployment.Tenant.Name | Replace \" \" | Replace \"-\" \"_\"}" {}
+}
+
+variable "Project.MySql.Database.Name" {
+    value "springcrm_dev_#{Tenant.Name}" {
         environment = ["development"]
     }
 
-    value "INFO" {
+    value "springcrm_test_#{Tenant.Name}" {
+        description = ""
         environment = ["test"]
     }
 
-    value "ERROR" {
+    value "springcrm_prod_##{Tenant.Name}" {
+        description = ""
         environment = ["production"]
     }
 }
