@@ -133,21 +133,21 @@ variable "Project.Installation.DNS" {
     value "http://#{Octopus.Machine.Name}.#{Infra.Azure.ResourceGroupLocation}.cloudapp.azure.com:9080/springcrm_#{Global.Environment.Abbr}_#{Octopus.Deployment.Tenant.Name | Replace \" \" \"_\" | Replace \"-\" \"\"}" {}
 }
 
+variable "Tenant.Name" {
+    value "#{Octopus.Deployment.Tenant.Name | Replace \" \" \"_\" | Replace \"-\" \"\" | ToLower}" {}
+}
+
 variable "Application.Web.Portal.URL" {
-    value "http://websphere-d.westeurope.cloudapp.azure.com:9080/springcrm_#{Tenant.Name}" {
+    value "http://websphere-d.westeurope.cloudapp.azure.com:9080/springcrm_d_#{Tenant.Name}" {
         environment = ["development"]
     }
 
-    value "http://websphere-t.westeurope.cloudapp.azure.com:9080/springcrm_#{Tenant.Name}" {
+    value "http://websphere-t.westeurope.cloudapp.azure.com:9080/springcrm_p_#{Tenant.Name}" {
         environment = ["test"]
     }
 
-    value "http://websphere-p.westeurope.cloudapp.azure.com:9080/springcrm_#{Tenant.Name}" {
+    value "http://websphere-p.westeurope.cloudapp.azure.com:9080/springcrm_t_#{Tenant.Name}" {
         description = ""
         environment = ["production"]
     }
-}
-
-variable "Tenant.Name" {
-    value "#{Octopus.Deployment.Tenant.Name | Replace \" \" \"_\" | Replace \"-\" \"\" | ToLower}" {}
 }
