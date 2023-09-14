@@ -131,7 +131,7 @@ variable "Project.MySql.Database.Name" {
         environment = ["test"]
     }
 
-    value "springcrm_prod_##{Tenant.Name}" {
+    value "springcrm_prod_#{Tenant.Name}" {
         description = ""
         environment = ["production"]
     }
