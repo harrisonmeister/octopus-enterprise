@@ -1,9 +1,3 @@
-variable "Octopus.Aws.Regions" {
-    value "us-east-2" {
-        action = ["check-for-namespace-aws-discovery"]
-    }
-}
-
 variable "PetClinic.CleanedEnvironmentName" {
     value "#{Octopus.Environment.Name | Replace \"[^a-zA-Z]+\" \"-\" | ToLower}" {}
 }
@@ -50,5 +44,11 @@ variable "Project.Azure.Account" {
     value "octopetshop-azure-subscription" {
         action = ["check-for-namespace"]
         description = ""
+    }
+}
+
+variable "Project.Aws.Regions" {
+    value "us-east-2" {
+        action = ["check-for-namespace-aws-discovery"]
     }
 }
