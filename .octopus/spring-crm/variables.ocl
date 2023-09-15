@@ -142,11 +142,11 @@ variable "Application.Web.Portal.URL" {
         environment = ["development"]
     }
 
-    value "http://websphere-t.westeurope.cloudapp.azure.com:9080/springcrm_p_#{Tenant.Name}" {
+    value "http://websphere-t.westeurope.cloudapp.azure.com:9080/springcrm_t_#{Tenant.Name}" {
         environment = ["test"]
     }
 
-    value "http://websphere-p.westeurope.cloudapp.azure.com:9080/springcrm_t_#{Tenant.Name}" {
+    value "http://websphere-p.westeurope.cloudapp.azure.com:9080/springcrm_p_#{Tenant.Name}" {
         description = ""
         environment = ["production"]
     }
