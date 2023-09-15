@@ -68,10 +68,6 @@ variable "OctopusPrintEvaluatedVariables" {
     value "False" {}
 }
 
-variable "Project.LB.ServiceName" {
-    value "springcrm-#{Octopus.Deployment.Tenant.Name | Replace \" \" | Replace \"-\" \"_\" | ToLower}-lb" {}
-}
-
 variable "Project.WebApp.HttpsPort" {
     value "9081" {}
 }
@@ -150,4 +146,8 @@ variable "Application.Web.Portal.URL" {
         description = ""
         environment = ["production"]
     }
+}
+
+variable "Project.LB.ServiceName" {
+    value "springcrm-#{Octopus.Deployment.Tenant.Name | Replace \" \" \"-\" | Replace \"-\" \"\" | ToLower}-lb" {}
 }
