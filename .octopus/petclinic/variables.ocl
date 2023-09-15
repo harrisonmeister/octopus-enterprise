@@ -4,15 +4,6 @@ variable "Octopus.Aws.Regions" {
     }
 }
 
-variable "Octopus.Azure.Account" {
-    type = "AzureAccount"
-
-    value "octopetshop-azure-subscription" {
-        action = ["check-for-namespace"]
-        description = ""
-    }
-}
-
 variable "PetClinic.CleanedEnvironmentName" {
     value "#{Octopus.Environment.Name | Replace \"[^a-zA-Z]+\" \"-\" | ToLower}" {}
 }
@@ -51,4 +42,13 @@ variable "Project.Container.Web.Memory.Limit" {
 
 variable "Project.Container.Web.Memory.Request" {
     value "10Mi" {}
+}
+
+variable "Project.Azure.Account" {
+    type = "AzureAccount"
+
+    value "octopetshop-azure-subscription" {
+        action = ["check-for-namespace"]
+        description = ""
+    }
 }
