@@ -65,10 +65,31 @@ jobs:
             ./spring-crm/artifacts/springcrm.web.${{ steps.version-generator.outputs.version }}.war
             ./spring-crm/artifacts/springcrm.db.${{ steps.version-generator.outputs.version }}.zip
 
+ push-build-info:
+      # Push Build information to Octopus
+      name: Push build information to Octopus 🐙
+      needs: [build]
+      runs-on: ubuntu-latest
+
+      env:
+        OCTOPUS_URL: ${{ vars.OCTOPUS_SERVER_URL }}
+        OCTOPUS_API_KEY: ${{ secrets.OCTOPUS_API_KEY }}
+        OCTOPUS_SPACE: ${{ vars.OCTOPUS_SERVER_SPACE }}
+
+      steps:
+        - uses: actions/checkout@v2
+        - name: Push build information to Octopus Deploy 🐙
+          uses: OctopusDeploy/push-build-information-action@v3
+          with:
+            packages: |
+              'springcrm.web'
+              'springcrm.db'
+            version: ${{ needs.build.outputs.version }}
+
   create-octopus-release:
       # Create Octopus release
       name: Create Octopus Release 🐙
-      needs: [build]
+      needs: [build, push-build-info]
       runs-on: ubuntu-latest
       
       env:
@@ -88,7 +109,7 @@ jobs:
   Deploy-Octopus-Release:
       # Deploy Octopus release
       name: Deploy to Development 🐙
-      needs: [build, create-octopus-release]
+      needs: [build, push-build-info, create-octopus-release]
       runs-on: ubuntu-latest
       
       env:
