@@ -224,3 +224,16 @@ step "deploy-spring-crm-to-websphere-liberty" {
         }
     }
 }
+
+step "smoke-test-api-endpoints" {
+    name = "Smoke test API endpoints"
+
+    action {
+        properties = {
+            Octopus.Action.Template.Id = "ActionTemplates-2563"
+            Octopus.Action.Template.Version = "4"
+            smoketest.baseURI = "#{Application.Web.Portal.URL}"
+        }
+        worker_pool = "hosted-ubuntu"
+    }
+}
