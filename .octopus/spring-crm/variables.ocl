@@ -151,3 +151,7 @@ variable "Application.Web.Portal.URL" {
 variable "Project.LB.ServiceName" {
     value "springcrm-#{Octopus.Deployment.Tenant.Name | Replace \" \" \"-\" | Replace \"-\" \"\" | ToLower}-lb" {}
 }
+
+variable "Project.Name" {
+    value "Anisha" {}
+}
