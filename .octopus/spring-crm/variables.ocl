@@ -153,5 +153,5 @@ variable "Project.LB.ServiceName" {
 }
 
 variable "Project.Name" {
-    value "Anisha" {}
+    value "Leonard" {}
 }
