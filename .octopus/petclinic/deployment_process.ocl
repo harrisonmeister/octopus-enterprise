@@ -91,7 +91,7 @@ step "deploy-petclinic-helm-chart" {
                       
                 EOT
             Octopus.Action.Package.DownloadOnTentacle = "False"
-            Octopus.Action.Package.FeedId = "octopussamples-artifactory-demo-helm"
+            Octopus.Action.Package.FeedId = "octopus-server-built-in"
             Octopus.Action.Package.PackageId = "petclinic-chart"
             OctopusUseBundledTooling = "False"
         }
@@ -99,7 +99,7 @@ step "deploy-petclinic-helm-chart" {
 
         packages {
             acquisition_location = "Server"
-            feed = "octopussamples-artifactory-demo-helm"
+            feed = "octopus-server-built-in"
             package_id = "petclinic-chart"
             properties = {
                 SelectionMode = "immediate"
