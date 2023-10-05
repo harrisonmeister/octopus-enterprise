@@ -52,16 +52,8 @@ variable "Project.Database.ConnectionString" {
     value "jdbc:mysql://#{Project.MySql.Server.Name}:3306/#{Project.MySql.Database.Name}?useSSL=true&serverTimezone=UTC&verifyServerCertificate=false&enabledTLSProtocols=TLSv1.2" {}
 }
 
-variable "//*:property[@name='username']/@value" {
-    value "#{Octopus.Action[CyberArk Conjur - Retrieve Secrets].Output.username}" {}
-}
-
 variable "//*:property[@name='url']/@value" {
     value "#{Project.Database.ConnectionString}" {}
-}
-
-variable "//*:property[@name='password']/@value" {
-    value "#{Octopus.Action[CyberArk Conjur - Retrieve Secrets].Output.password}" {}
 }
 
 variable "OctopusPrintEvaluatedVariables" {
