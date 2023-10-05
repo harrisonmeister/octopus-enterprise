@@ -1,31 +1,5 @@
-step "cyberark-conjur-retrieve-secrets" {
-    name = "CyberArk Conjur - Retrieve Secrets"
-    properties = {
-        Octopus.Action.TargetRoles = "conjur-server"
-    }
-
-    action {
-        properties = {
-            CyberArk.Conjur.RetrieveSecrets.Account = "#{Conjur.Account.Name}"
-            CyberArk.Conjur.RetrieveSecrets.ApiKey = "#{Conjur.RetrieveSecrets.Host.ApiKey}"
-            CyberArk.Conjur.RetrieveSecrets.Login = "#{Conjur.RetrieveSecrets.Host.Account}"
-            CyberArk.Conjur.RetrieveSecrets.PrintVariableNames = "False"
-            CyberArk.Conjur.RetrieveSecrets.SecretVariables = <<-EOT
-                OctoSecrets/credentials/username | username
-                OctoSecrets/credentials/password | password
-                OctoSecrets/ssl/private_key  | ssl_key
-                EOT
-            CyberArk.Conjur.RetrieveSecrets.Url = "#{Conjur.Server.Url}"
-            Octopus.Action.RunOnServer = "false"
-            Octopus.Action.Template.Id = "ActionTemplates-2522"
-            Octopus.Action.Template.Version = "1"
-        }
-    }
-}
-
 step "mysql-create-database-if-not-exists" {
     name = "MySQL - Create Database If Not Exists"
-    start_trigger = "StartWithPrevious"
 
     action {
         properties = {
