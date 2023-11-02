@@ -144,9 +144,3 @@ variable "Octopus.ServiceNow.ChangeRequest.Number" {
         }
     }
 }
-
-variable "My.Certificate" {
-    type = "Certificate"
-
-    value "Certificates-161" {}
-}
