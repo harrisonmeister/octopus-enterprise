@@ -43,27 +43,6 @@ step "create-web-app-service" {
     }
 }
 
-step "send-completion-notification" {
-    condition = "Variable"
-    name = "Send Completion Notification"
-    properties = {
-        Octopus.Step.ConditionVariableExpression = "#{unless Octopus.Deployment.Trigger.Id}True#{/unless}"
-    }
-
-    action {
-        action_type = "Octopus.Email"
-        environments = ["production"]
-        notes = "Email the deployer that the deployment has been completed."
-        properties = {
-            Octopus.Action.Email.Body = "#{Octopus.Release.Notes}"
-            Octopus.Action.Email.IsHtml = "True"
-            Octopus.Action.Email.Subject = "Release #{Octopus.Release.Number} has been deployed to #{Octopus.Environment.Name}"
-            Octopus.Action.Email.To = "#{Octopus.Deployment.CreatedBy.EmailAddress}"
-            Octopus.Action.RunOnServer = "false"
-        }
-    }
-}
-
 step "notify-status-of-deployment" {
     condition = "Always"
     name = "Notify status of deployment"
