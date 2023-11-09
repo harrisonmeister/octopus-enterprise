@@ -38,17 +38,17 @@ variable "Project.Container.Web.Memory.Request" {
     value "10Mi" {}
 }
 
-variable "Project.Azure.Account" {
+variable "Project.Aws.Regions" {
+    value "us-east-2" {
+        action = ["check-for-namespace-aws-discovery"]
+    }
+}
+
+variable "Octopus.Azure.Account" {
     type = "AzureAccount"
 
     value "octopetshop-azure-subscription" {
         action = ["check-for-namespace"]
         description = ""
-    }
-}
-
-variable "Project.Aws.Regions" {
-    value "us-east-2" {
-        action = ["check-for-namespace-aws-discovery"]
     }
 }
