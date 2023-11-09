@@ -26,7 +26,6 @@ step "create-web-app-service" {
 
     action "create-web-app-service-azure-discovery" {
         action_type = "Octopus.KubernetesDeployRawYaml"
-        is_disabled = true
         notes = <<-EOT
                 Create a Load Balancer service for the web app on the target cluster.
                 
@@ -71,6 +70,7 @@ step "create-web-app-service-aws-discovery" {
 
     action {
         action_type = "Octopus.KubernetesDeployRawYaml"
+        is_disabled = true
         notes = <<-EOT
                 Create a Load Balancer service for the web app on the target cluster.
                 
@@ -136,7 +136,7 @@ step "deploy-web-app-containers" {
             Octopus.Action.KubernetesContainers.ServiceNameType = "External"
             Octopus.Action.KubernetesContainers.ServiceType = "ClusterIP"
         }
-        worker_pool_variable = "OctoPetShop.WorkerPool.AWS"
+        worker_pool_variable = "OctoPetShop.WorkerPool.Azure"
 
         packages "web-app" {
             acquisition_location = "NotAcquired"
