@@ -13,6 +13,7 @@ step "approve-production-deployment" {
         properties = {
             Octopus.Action.Manual.BlockConcurrentDeployments = "True"
             Octopus.Action.Manual.Instructions = "Please add approval notes here."
+            Octopus.Action.RunOnServer = "false"
         }
     }
 }
@@ -25,6 +26,7 @@ step "create-web-app-service" {
 
     action "create-web-app-service-azure-discovery" {
         action_type = "Octopus.KubernetesDeployRawYaml"
+        is_disabled = true
         notes = <<-EOT
                 Create a Load Balancer service for the web app on the target cluster.
                 
@@ -69,7 +71,6 @@ step "create-web-app-service-aws-discovery" {
 
     action {
         action_type = "Octopus.KubernetesDeployRawYaml"
-        is_disabled = true
         notes = <<-EOT
                 Create a Load Balancer service for the web app on the target cluster.
                 
@@ -135,7 +136,7 @@ step "deploy-web-app-containers" {
             Octopus.Action.KubernetesContainers.ServiceNameType = "External"
             Octopus.Action.KubernetesContainers.ServiceType = "ClusterIP"
         }
-        worker_pool_variable = "OctoPetShop.WorkerPool.Azure"
+        worker_pool_variable = "OctoPetShop.WorkerPool.AWS"
 
         packages "web-app" {
             acquisition_location = "NotAcquired"
@@ -166,6 +167,7 @@ step "send-completion-notification" {
             Octopus.Action.Email.IsHtml = "True"
             Octopus.Action.Email.Subject = "Release #{Octopus.Release.Number} has been deployed to #{Octopus.Environment.Name}"
             Octopus.Action.Email.To = "#{Octopus.Deployment.CreatedBy.EmailAddress}"
+            Octopus.Action.RunOnServer = "false"
         }
     }
 }
