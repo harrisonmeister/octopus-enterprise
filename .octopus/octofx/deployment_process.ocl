@@ -29,7 +29,7 @@ step "deploy-database-changes" {
             Octopus.Action.EnabledFeatures = "Octopus.Features.ConfigurationVariables"
             Octopus.Action.Package.AutomaticallyUpdateAppSettingsAndConnectionStrings = "True"
             Octopus.Action.Package.DownloadOnTentacle = "False"
-            Octopus.Action.Package.FeedId = "octopussamples-artifactory-local-nuget-repo"
+            Octopus.Action.Package.FeedId = "octopus-server-built-in"
             Octopus.Action.Package.PackageId = "OctoFX.Database"
             Octopus.Action.Script.ScriptFileName = "Deploy.ps1"
             Octopus.Action.Script.ScriptSource = "Package"
@@ -38,7 +38,7 @@ step "deploy-database-changes" {
 
         packages {
             acquisition_location = "Server"
-            feed = "octopussamples-artifactory-local-nuget-repo"
+            feed = "octopus-server-built-in"
             package_id = "OctoFX.Database"
             properties = {
                 SelectionMode = "immediate"
@@ -61,7 +61,7 @@ step "deploy-rate-service" {
             Octopus.Action.Package.AutomaticallyRunConfigurationTransformationFiles = "True"
             Octopus.Action.Package.AutomaticallyUpdateAppSettingsAndConnectionStrings = "True"
             Octopus.Action.Package.DownloadOnTentacle = "False"
-            Octopus.Action.Package.FeedId = "octopussamples-artifactory-local-nuget-repo"
+            Octopus.Action.Package.FeedId = "octopus-server-built-in"
             Octopus.Action.Package.PackageId = "OctoFX.RateService"
             Octopus.Action.RunOnServer = "false"
             Octopus.Action.WindowsService.CreateOrUpdateService = "True"
@@ -77,7 +77,7 @@ step "deploy-rate-service" {
 
         packages {
             acquisition_location = "Server"
-            feed = "octopussamples-artifactory-local-nuget-repo"
+            feed = "octopus-server-built-in"
             package_id = "OctoFX.RateService"
             properties = {
                 SelectionMode = "immediate"
@@ -148,7 +148,7 @@ step "deploy-trading-site" {
             Octopus.Action.Package.AutomaticallyRunConfigurationTransformationFiles = "True"
             Octopus.Action.Package.AutomaticallyUpdateAppSettingsAndConnectionStrings = "True"
             Octopus.Action.Package.DownloadOnTentacle = "False"
-            Octopus.Action.Package.FeedId = "octopussamples-artifactory-local-nuget-repo"
+            Octopus.Action.Package.FeedId = "octopus-server-built-in"
             Octopus.Action.Package.PackageId = "OctoFX.TradingWebsite"
             Octopus.Action.RunOnServer = "false"
         }
@@ -156,7 +156,7 @@ step "deploy-trading-site" {
 
         packages {
             acquisition_location = "Server"
-            feed = "octopussamples-artifactory-local-nuget-repo"
+            feed = "octopus-server-built-in"
             package_id = "OctoFX.TradingWebsite"
             properties = {
                 SelectionMode = "immediate"
