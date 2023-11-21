@@ -32,6 +32,7 @@ step "create-web-app-service" {
                 This step does cloud target discovery for AKS clusters.
                 EOT
         properties = {
+            Octopus.Action.Kubernetes.ResourceStatusCheck = "True"
             Octopus.Action.KubernetesContainers.CustomResourceYaml = <<-EOT
                 apiVersion: v1
                 kind: Service
@@ -54,6 +55,7 @@ step "create-web-app-service" {
                     type: main
                 
                 EOT
+            Octopus.Action.KubernetesContainers.DeploymentWait = "NoWait"
             Octopus.Action.KubernetesContainers.Namespace = "#{OctoPetShop.Cluster.Namespace}"
             Octopus.Action.Script.ScriptSource = "Inline"
             OctopusUseBundledTooling = "False"
