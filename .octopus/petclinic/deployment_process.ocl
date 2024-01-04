@@ -119,6 +119,33 @@ step "deploy-petclinic-helm-chart" {
     }
 }
 
+step "deploy-kubernetes-service-resource" {
+    name = "Deploy Kubernetes service resource"
+    properties = {
+        Octopus.Action.TargetRoles = "demo-k8s-cluster"
+    }
+
+    action {
+        action_type = "Octopus.KubernetesDeployService"
+        properties = {
+            Octopus.Action.Kubernetes.DeploymentTimeout = "180"
+            Octopus.Action.Kubernetes.ResourceStatusCheck = "True"
+            Octopus.Action.KubernetesContainers.Namespace = "#{PetClinic.Cluster.Namespace}"
+            Octopus.Action.KubernetesContainers.SelectorLabels = "{\"app.kubernetes.io/name\":\"petclinic-chart\"}"
+            Octopus.Action.KubernetesContainers.ServiceName = "petclinic-load-balancer"
+            Octopus.Action.KubernetesContainers.ServicePorts = "[{\"name\":\"http\",\"port\":\"80\",\"targetPort\":\"8080\",\"nodePort\":\"\",\"protocol\":\"TCP\"}]"
+            Octopus.Action.KubernetesContainers.ServiceType = "LoadBalancer"
+            OctopusUseBundledTooling = "False"
+        }
+        worker_pool = "hosted-ubuntu"
+
+        container {
+            feed = "docker-hub"
+            image = "octopusdeploy/worker-tools:ubuntu.22.04"
+        }
+    }
+}
+
 step "notify-status-of-deployment" {
     condition = "Always"
     name = "Notify status of deployment"
