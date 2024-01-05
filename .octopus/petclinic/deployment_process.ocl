@@ -66,7 +66,6 @@ step "deploy-petclinic-helm-chart" {
         action_type = "Octopus.HelmChartUpgrade"
         notes = "Deploy the PetClinic Helm Chart to the K8s cluster."
         properties = {
-            Octopus.Action.Helm.AdditionalArgs = "--debug"
             Octopus.Action.Helm.ClientVersion = "V3"
             Octopus.Action.Helm.Namespace = "#{PetClinic.Cluster.Namespace}"
             Octopus.Action.Helm.ResetValues = "True"
@@ -89,7 +88,8 @@ step "deploy-petclinic-helm-chart" {
                   tag: "#{Octopus.Action.Package[petclinic-web].PackageVersion}"
                   memoryRequest: "#{Project.Container.Web.Memory.Request}"
                   memoryLimit: "#{Project.Container.Web.Memory.Limit}"
-                      
+                ingress:
+                  enabled: false
                 EOT
             Octopus.Action.Package.DownloadOnTentacle = "False"
             Octopus.Action.Package.FeedId = "octopus-server-built-in"
