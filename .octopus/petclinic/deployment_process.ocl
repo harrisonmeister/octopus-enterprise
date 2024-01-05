@@ -132,7 +132,7 @@ step "deploy-kubernetes-service-resource" {
             Octopus.Action.Kubernetes.DeploymentTimeout = "180"
             Octopus.Action.Kubernetes.ResourceStatusCheck = "True"
             Octopus.Action.KubernetesContainers.Namespace = "#{PetClinic.Cluster.Namespace}"
-            Octopus.Action.KubernetesContainers.SelectorLabels = "{\"app.kubernetes.io/name\":\"petclinic-chart\"}"
+            Octopus.Action.KubernetesContainers.SelectorLabels = "{\"component\":\"petclinic-web\"}"
             Octopus.Action.KubernetesContainers.ServiceName = "petclinic-load-balancer"
             Octopus.Action.KubernetesContainers.ServicePorts = "[{\"name\":\"http\",\"port\":\"80\",\"targetPort\":\"8080\",\"nodePort\":\"\",\"protocol\":\"TCP\"}]"
             Octopus.Action.KubernetesContainers.ServiceType = "LoadBalancer"
