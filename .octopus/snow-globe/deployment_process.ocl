@@ -1,3 +1,16 @@
+step "calculate-deployment-mode" {
+    name = "Calculate Deployment Mode"
+
+    action {
+        is_required = true
+        properties = {
+            Octopus.Action.Template.Id = "ActionTemplates-3264"
+            Octopus.Action.Template.Version = "5"
+        }
+        worker_pool = "hosted-ubuntu"
+    }
+}
+
 step "create-web-app-service" {
     name = "Create Snow Globe service"
     properties = {
