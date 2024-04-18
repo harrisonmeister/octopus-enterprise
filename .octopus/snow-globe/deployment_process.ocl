@@ -95,6 +95,7 @@ step "rollback-to-previous-version" {
 step "notify-status-of-deployment" {
     condition = "Always"
     name = "Notify status of deployment"
+    start_trigger = "StartWithPrevious"
 
     action {
         properties = {
