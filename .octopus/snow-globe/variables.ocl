@@ -52,10 +52,10 @@ variable "SnowGlobe.WorkerPool" {
 
 variable "SnowGlobe.IsAutomatedRollback" {
     value "False" {
-        description = "Automated rollback"
+        description = ""
 
         prompt {
-            description = "Is this deployment triggered by an automated rollback. Default: False"
+            description = "Is this deployment being triggered by an automated rollback? Default: False"
             display_settings = {
                 Octopus.ControlType = "Checkbox"
             }
