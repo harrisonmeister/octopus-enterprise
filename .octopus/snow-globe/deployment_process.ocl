@@ -15,6 +15,7 @@ step "create-web-app-service" {
     properties = {
         Octopus.Action.TargetRoles = "demo-k8s-cluster"
     }
+    start_trigger = "StartWithPrevious"
 
     action {
         action_type = "Octopus.KubernetesDeployRawYaml"
