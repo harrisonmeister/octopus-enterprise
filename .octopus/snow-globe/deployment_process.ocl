@@ -43,6 +43,23 @@ step "create-web-app-service" {
     }
 }
 
+step "run-tests" {
+    name = "Run tests"
+
+    action {
+        action_type = "Octopus.Script"
+        properties = {
+            Octopus.Action.Script.ScriptBody = <<-EOT
+                $exitCode = Get-Random -Maximum 2
+                #exit $exitCode
+                EOT
+            Octopus.Action.Script.ScriptSource = "Inline"
+            Octopus.Action.Script.Syntax = "PowerShell"
+        }
+        worker_pool = "hosted-ubuntu"
+    }
+}
+
 step "notify-status-of-deployment" {
     condition = "Always"
     name = "Notify status of deployment"
