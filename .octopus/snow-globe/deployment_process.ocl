@@ -63,8 +63,7 @@ step "run-tests" {
         properties = {
             Octopus.Action.Script.ScriptBody = <<-EOT
                 $exitCode = Get-Random -Maximum 2
-                exit 1
-                #exit $exitCode
+                exit $exitCode
                 EOT
             Octopus.Action.Script.ScriptSource = "Inline"
             Octopus.Action.Script.Syntax = "PowerShell"
@@ -77,7 +76,7 @@ step "rollback-to-previous-version" {
     condition = "Variable"
     name = "Rollback to previous version"
     properties = {
-        Octopus.Step.ConditionVariableExpression = "#{if Octopus.Deployment.Error}#{if}#{/if}"
+        Octopus.Step.ConditionVariableExpression = "#{if Octopus.Deployment.Error}#{Octopus.Action[Calculate Deployment Mode].Output.RunOnDeployOrRedeploy}#{/if}"
     }
 
     action {
