@@ -80,7 +80,6 @@ step "rollback-to-previous-version" {
     }
 
     action {
-        is_disabled = true
         properties = {
             DeployOctopusRelease.ApiKey = "#{SnowGlobe.OctopusApiKey}"
             DeployOctopusRelease.Environment = "#{Octopus.Environment.Name}"
