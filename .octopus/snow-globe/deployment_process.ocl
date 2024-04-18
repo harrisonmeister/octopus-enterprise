@@ -79,12 +79,12 @@ step "run-tests" {
 
 step "rollback-to-previous-version" {
     condition = "Variable"
-    name = "Rollback to previous version"
+    name = "Rollback on failure"
     properties = {
         Octopus.Step.ConditionVariableExpression = "#{if Octopus.Deployment.Error}#{Octopus.Action[Calculate Deployment Mode].Output.RunOnDeployOrRedeploy}#{/if}"
     }
 
-    action {
+    action "rollback-on-failure" {
         properties = {
             DeployOctopusRelease.ApiKey = "#{SnowGlobe.OctopusApiKey}"
             DeployOctopusRelease.Environment = "#{Octopus.Environment.Name}"
