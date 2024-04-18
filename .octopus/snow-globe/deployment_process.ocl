@@ -73,6 +73,27 @@ step "run-tests" {
     }
 }
 
+step "rollback-to-previous-version" {
+    condition = "Variable"
+    name = "Rollback to previous version"
+    properties = {
+        Octopus.Step.ConditionVariableExpression = "#{if Octopus.Deployment.Error}#{if}#{/if}"
+    }
+
+    action {
+        is_disabled = true
+        properties = {
+            DeployOctopusRelease.ApiKey = "#{SnowGlobe.OctopusApiKey}"
+            DeployOctopusRelease.Environment = "#{Octopus.Environment.Name}"
+            DeployOctopusRelease.Project = "#{Octopus.Project.Name}"
+            DeployOctopusRelease.ReleaseNumber = "#{Octopus.Release.CurrentForEnvironment.Number}"
+            Octopus.Action.Template.Id = "ActionTemplates-3267"
+            Octopus.Action.Template.Version = "0"
+        }
+        worker_pool = "hosted-ubuntu"
+    }
+}
+
 step "notify-status-of-deployment" {
     condition = "Always"
     name = "Notify status of deployment"
