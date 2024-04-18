@@ -11,6 +11,24 @@ step "calculate-deployment-mode" {
     }
 }
 
+step "run-tests" {
+    name = "Run tests"
+
+    action {
+        action_type = "Octopus.Script"
+        properties = {
+            Octopus.Action.Script.ScriptBody = <<-EOT
+                $exitCode = Get-Random -Maximum 2
+                exit 1
+                #exit $exitCode
+                EOT
+            Octopus.Action.Script.ScriptSource = "Inline"
+            Octopus.Action.Script.Syntax = "PowerShell"
+        }
+        worker_pool = "hosted-ubuntu"
+    }
+}
+
 step "create-web-app-service" {
     name = "Create Snow Globe service"
     properties = {
@@ -19,6 +37,7 @@ step "create-web-app-service" {
 
     action {
         action_type = "Octopus.KubernetesDeployRawYaml"
+        is_disabled = true
         notes = "Create a Load Balancer service for the web app on the target cluster."
         properties = {
             Octopus.Action.KubernetesContainers.CustomResourceYaml = <<-EOT
@@ -53,23 +72,6 @@ step "create-web-app-service" {
             feed = "docker-hub"
             image = "octopusdeploy/worker-tools:5.2.0-ubuntu.22.04"
         }
-    }
-}
-
-step "run-tests" {
-    name = "Run tests"
-
-    action {
-        action_type = "Octopus.Script"
-        properties = {
-            Octopus.Action.Script.ScriptBody = <<-EOT
-                $exitCode = Get-Random -Maximum 2
-                #exit $exitCode
-                EOT
-            Octopus.Action.Script.ScriptSource = "Inline"
-            Octopus.Action.Script.Syntax = "PowerShell"
-        }
-        worker_pool = "hosted-ubuntu"
     }
 }
 
