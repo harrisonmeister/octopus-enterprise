@@ -49,3 +49,17 @@ variable "SnowGlobe.WorkerPool" {
 
     value "azure-worker-pool" {}
 }
+
+variable "SnowGlobe.IsAutomatedRollback" {
+    value "False" {
+        description = "Automated rollback"
+
+        prompt {
+            description = "Is this deployment triggered by an automated rollback. Default: False"
+            display_settings = {
+                Octopus.ControlType = "Checkbox"
+            }
+            label = "Automated rollback"
+        }
+    }
+}
