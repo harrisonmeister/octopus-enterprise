@@ -21,6 +21,7 @@ step "create-web-app-service" {
         action_type = "Octopus.KubernetesDeployRawYaml"
         notes = "Create a Load Balancer service for the web app on the target cluster."
         properties = {
+            Octopus.Action.Kubernetes.ResourceStatusCheck = "True"
             Octopus.Action.KubernetesContainers.CustomResourceYaml = <<-EOT
                 apiVersion: v1
                 kind: Service
@@ -43,6 +44,7 @@ step "create-web-app-service" {
                     type: main
                 
                 EOT
+            Octopus.Action.KubernetesContainers.DeploymentWait = "NoWait"
             Octopus.Action.KubernetesContainers.Namespace = "#{SnowGlobe.Cluster.Namespace}"
             Octopus.Action.Script.ScriptSource = "Inline"
             OctopusUseBundledTooling = "False"
