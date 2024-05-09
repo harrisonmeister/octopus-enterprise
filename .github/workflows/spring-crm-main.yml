@@ -13,6 +13,8 @@ env:
 jobs:
   build:
     name: Build and Package Spring CRM
+    permissions:
+      id-token: write
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -60,7 +62,7 @@ jobs:
       - name: Login to Octopus Deploy 🐙
         uses: OctopusDeploy/login@v1
         with: 
-          server: https://demo.octopus.app
+          server: ${{ env.OCTOPUS_URL }}
           service_account_id: 4d50c8ac-1515-4351-96a7-4a82d55d55ff
       # Push packages to Octopus repository
       - name: Push packages to Octopus 🐙
@@ -73,6 +75,8 @@ jobs:
   push-build-info:
     # Push Build information to Octopus
     name: Push build information to Octopus 🐙
+    permissions:
+      id-token: write
     needs: [build]
     runs-on: ubuntu-latest
 
@@ -81,7 +85,7 @@ jobs:
       - name: Login to Octopus Deploy 🐙
         uses: OctopusDeploy/login@v1
         with: 
-          server: https://demo.octopus.app
+          server: ${{ env.OCTOPUS_URL }}
           service_account_id: 4d50c8ac-1515-4351-96a7-4a82d55d55ff
       # Push Build Info    
       - name: Push build information to Octopus Deploy 🐙
@@ -95,19 +99,17 @@ jobs:
   create-octopus-release:
     # Create Octopus release
     name: Create Octopus Release 🐙
+    permissions:
+      id-token: write
     needs: [build, push-build-info]
     runs-on: ubuntu-latest
-    
-    env:
-      OCTOPUS_URL: ${{ vars.OCTOPUS_SERVER_URL }}      
-      OCTOPUS_SPACE: ${{ vars.OCTOPUS_SERVER_SPACE }}
       
     steps:
     # Login to Octopus 
     - name: Login to Octopus Deploy 🐙
       uses: OctopusDeploy/login@v1
       with: 
-        server: https://demo.octopus.app
+        server: ${{ env.OCTOPUS_URL }}
         service_account_id: 4d50c8ac-1515-4351-96a7-4a82d55d55ff
     - name: Create Octopus Release 🐙
       uses: OctopusDeploy/create-release-action@v3
@@ -121,6 +123,8 @@ jobs:
   deploy-octopus-release:
     # Deploy Octopus release
     name: Deploy to Development 🐙
+    permissions:
+      id-token: write
     needs: [build, push-build-info, create-octopus-release]
     runs-on: ubuntu-latest
       
@@ -129,7 +133,7 @@ jobs:
     - name: Login to Octopus Deploy 🐙
       uses: OctopusDeploy/login@v1
       with: 
-        server: https://demo.octopus.app
+        server: ${{ env.OCTOPUS_URL }}
         service_account_id: 4d50c8ac-1515-4351-96a7-4a82d55d55ff
     - name: Deploy to Development 🐙
       uses: OctopusDeploy/deploy-release-tenanted-action@v3
