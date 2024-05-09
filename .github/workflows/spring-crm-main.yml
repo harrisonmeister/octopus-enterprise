@@ -68,7 +68,6 @@ jobs:
       - name: Push packages to Octopus 🐙
         uses: OctopusDeploy/push-package-action@v3
         with:  
-          space: ${{ env.OCTOPUS_SPACE }}
           packages: |
             ./spring-crm/artifacts/springcrm.web.${{ steps.version-generator.outputs.version }}.war
             ./spring-crm/artifacts/springcrm.db.${{ steps.version-generator.outputs.version }}.zip
@@ -92,7 +91,6 @@ jobs:
       - name: Push build information to Octopus Deploy 🐙
         uses: OctopusDeploy/push-build-information-action@v3
         with:
-          space: ${{ env.OCTOPUS_SPACE }}
           version: ${{ needs.build.outputs.version }}
           packages: |
             springcrm.web
@@ -117,7 +115,6 @@ jobs:
       uses: OctopusDeploy/create-release-action@v3
       id: "create-release"
       with:
-        space: ${{ env.OCTOPUS_SPACE }}
         project: "Spring CRM"
         git_ref: "refs/heads/main"
     outputs: 
@@ -142,7 +139,6 @@ jobs:
       uses: OctopusDeploy/deploy-release-tenanted-action@v3
       id: "deploy-release"
       with:
-        space: ${{ env.OCTOPUS_SPACE }}
         project: "Spring CRM"
         release_number: ${{ needs.create-octopus-release.outputs.release_number }}
         environment: |
