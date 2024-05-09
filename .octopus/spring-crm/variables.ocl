@@ -80,12 +80,6 @@ variable "Project.CleanedEnvironmentName" {
     value "#{Octopus.Environment.Name | Replace \"[^a-zA-Z]+\" \"-\" | ToLower}" {}
 }
 
-variable "Project.Azure.Account" {
-    type = "AzureAccount"
-
-    value "demoazure-sub" {}
-}
-
 variable "Project.MySql.Database.Name" {
     value "springcrm_dev_#{Tenant.Name}" {
         environment = ["development"]
@@ -143,4 +137,10 @@ variable "Octopus.ServiceNow.ChangeRequest.Number" {
             label = ""
         }
     }
+}
+
+variable "Project.Azure.Account" {
+    type = "AzureAccount"
+
+    value "octopus-demos-and-support" {}
 }
