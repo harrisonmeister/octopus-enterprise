@@ -144,3 +144,7 @@ variable "Project.Azure.Account" {
 
     value "octopus-demos-and-support" {}
 }
+
+variable "Project.MySql.Server" {
+    value "markh-octopus-demo" {}
+}
