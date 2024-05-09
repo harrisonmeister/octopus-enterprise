@@ -5,7 +5,11 @@ on:
     branches: [ main ]
 
   workflow_dispatch:
-
+  
+env:
+  OCTOPUS_URL: ${{ vars.OCTOPUS_SERVER_URL }}
+  OCTOPUS_SPACE: ${{ vars.OCTOPUS_SERVER_SPACE }}
+      
 jobs:
   build:
     name: Build and Package Spring CRM
@@ -16,11 +20,6 @@ jobs:
     
     outputs:
       version: ${{ steps.version-generator.outputs.version }}
-
-    env:
-      OCTOPUS_URL: ${{ vars.OCTOPUS_SERVER_URL }}
-      OCTOPUS_API_KEY: ${{ secrets.OCTOPUS_API_KEY }}
-      OCTOPUS_SPACE: ${{ vars.OCTOPUS_SERVER_SPACE }}  
 
     steps:
       - uses: actions/checkout@v3
@@ -57,6 +56,12 @@ jobs:
           base_path: ./spring-crm/flyway
           files: |
             **/*.*
+      # Login to Octopus 
+      - name: Login to Octopus Deploy 🐙
+        uses: OctopusDeploy/login@v1
+        with: 
+          server: https://demo.octopus.app
+          service_account_id: 4d50c8ac-1515-4351-96a7-4a82d55d55ff
       # Push packages to Octopus repository
       - name: Push packages to Octopus 🐙
         uses: OctopusDeploy/push-package-action@v3
@@ -71,14 +76,16 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
 
-    env:
-      OCTOPUS_URL: ${{ vars.OCTOPUS_SERVER_URL }}
-      OCTOPUS_API_KEY: ${{ secrets.OCTOPUS_API_KEY }}
-      OCTOPUS_SPACE: ${{ vars.OCTOPUS_SERVER_SPACE }}
-
     steps:
-      - uses: OctopusDeploy/push-build-information-action@v3
-        name: Push build information to Octopus Deploy 🐙
+      # Login to Octopus 
+      - name: Login to Octopus Deploy 🐙
+        uses: OctopusDeploy/login@v1
+        with: 
+          server: https://demo.octopus.app
+          service_account_id: 4d50c8ac-1515-4351-96a7-4a82d55d55ff
+      # Push Build Info    
+      - name: Push build information to Octopus Deploy 🐙
+        uses: OctopusDeploy/push-build-information-action@v3
         with:
           version: ${{ needs.build.outputs.version }}
           packages: |
@@ -92,12 +99,18 @@ jobs:
     runs-on: ubuntu-latest
     
     env:
-      OCTOPUS_URL: ${{ vars.OCTOPUS_SERVER_URL }}
-      OCTOPUS_API_KEY: ${{ secrets.OCTOPUS_API_KEY }}
+      OCTOPUS_URL: ${{ vars.OCTOPUS_SERVER_URL }}      
       OCTOPUS_SPACE: ${{ vars.OCTOPUS_SERVER_SPACE }}
       
     steps:
-    - uses: OctopusDeploy/create-release-action@v3
+    # Login to Octopus 
+    - name: Login to Octopus Deploy 🐙
+      uses: OctopusDeploy/login@v1
+      with: 
+        server: https://demo.octopus.app
+        service_account_id: 4d50c8ac-1515-4351-96a7-4a82d55d55ff
+    - name: Create Octopus Release 🐙
+      uses: OctopusDeploy/create-release-action@v3
       id: "create-release"
       with:
         project: "Spring CRM"
@@ -110,14 +123,16 @@ jobs:
     name: Deploy to Development 🐙
     needs: [build, push-build-info, create-octopus-release]
     runs-on: ubuntu-latest
-    
-    env:
-      OCTOPUS_URL: ${{ vars.OCTOPUS_SERVER_URL }}
-      OCTOPUS_API_KEY: ${{ secrets.OCTOPUS_API_KEY }}
-      OCTOPUS_SPACE: ${{ vars.OCTOPUS_SERVER_SPACE }}
       
     steps:
-    - uses: OctopusDeploy/deploy-release-tenanted-action@v3
+    # Login to Octopus 
+    - name: Login to Octopus Deploy 🐙
+      uses: OctopusDeploy/login@v1
+      with: 
+        server: https://demo.octopus.app
+        service_account_id: 4d50c8ac-1515-4351-96a7-4a82d55d55ff
+    - name: Deploy to Development 🐙
+      uses: OctopusDeploy/deploy-release-tenanted-action@v3
       id: "deploy-release"
       with:
         project: "Spring CRM"
