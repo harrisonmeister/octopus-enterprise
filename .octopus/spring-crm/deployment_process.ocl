@@ -9,7 +9,6 @@ step "slack-notify-deployment-started" {
             ssn_Color = "good"
             ssn_HookUrl = "#{Notification.Slack.Webhook}"
             ssn_IconUrl = "https://octopus.com/content/resources/favicon.png"
-            ssn_Message = "#{Project.Notification.TaskLink}"
             ssn_Title = "#{Project.Notification.DeploymentStartedTitle}"
             ssn_Username = "Octopus Deploy"
         }
