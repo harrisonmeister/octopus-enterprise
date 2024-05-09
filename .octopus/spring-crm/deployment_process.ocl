@@ -1,3 +1,22 @@
+step "slack-notify-deployment-started" {
+    name = "Slack - Notify deployment started"
+
+    action {
+        properties = {
+            Octopus.Action.Template.Id = "ActionTemplates-2547"
+            Octopus.Action.Template.Version = "15"
+            ssn_Channel = "#{Notification.Slack.Channel}"
+            ssn_Color = "good"
+            ssn_HookUrl = "#{Notification.Slack.Webhook}"
+            ssn_IconUrl = "https://octopus.com/content/resources/favicon.png"
+            ssn_Message = "#{Project.Notification.TaskLink}"
+            ssn_Title = "#{Project.Notification.DeploymentStartedTitle}"
+            ssn_Username = "Octopus Deploy"
+        }
+        worker_pool = "hosted-ubuntu"
+    }
+}
+
 step "mysql-create-database-if-not-exists" {
     name = "MySQL - Create Database If Not Exists"
 
@@ -118,7 +137,6 @@ step "deploy-spring-crm-to-websphere-liberty" {
     properties = {
         Octopus.Action.TargetRoles = "springcrm-web"
     }
-    start_trigger = "StartWithPrevious"
 
     action {
         action_type = "Octopus.JavaArchive"
@@ -147,5 +165,25 @@ step "deploy-spring-crm-to-websphere-liberty" {
                 SelectionMode = "immediate"
             }
         }
+    }
+}
+
+step "notify-status-of-deployment" {
+    condition = "Always"
+    name = "Notify status of deployment"
+
+    action {
+        properties = {
+            Octopus.Action.Template.Id = "ActionTemplates-2547"
+            Octopus.Action.Template.Version = "15"
+            ssn_Channel = "#{Notification.Slack.Channel}"
+            ssn_Color = "#{Notification.Slack.Status.Color}"
+            ssn_HookUrl = "#{Notification.Slack.Webhook}"
+            ssn_IconUrl = "https://octopus.com/content/resources/favicon.png"
+            ssn_Message = "#{Notification.Slack.Status.Message}"
+            ssn_Title = "#{Notification.Slack.Status.Deployment.Title}"
+            ssn_Username = "Octopus Deploy"
+        }
+        worker_pool = "hosted-ubuntu"
     }
 }
