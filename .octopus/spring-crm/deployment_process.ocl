@@ -77,14 +77,14 @@ step "generate-spring-crm-database-changes-info" {
 }
 
 step "database-changes-approval" {
-    name = "Database changes Approval"
+    name = "Deployment Approval"
 
-    action {
+    action "deployment-approval" {
         action_type = "Octopus.Manual"
-        environments = ["production"]
+        environments = ["production", "test"]
         properties = {
             Octopus.Action.Manual.BlockConcurrentDeployments = "False"
-            Octopus.Action.Manual.Instructions = "Please ensure that any database changes included in the deployment of this release are reviewed by either a DBA or the QA team and approved here."
+            Octopus.Action.Manual.Instructions = "Please ensure that any relevant database changes included in the deployment of this release are reviewed by either a DBA or the QA team and approved here."
             Octopus.Action.Manual.ResponsibleTeamIds = "global/demo-qa-team"
             Octopus.Action.RunOnServer = "false"
         }
