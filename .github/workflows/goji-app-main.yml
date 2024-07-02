@@ -127,6 +127,6 @@ jobs:
       with:
         project: "Goji"
         release_number: ${{ needs.create-octopus-release.outputs.release_number }}
-        environment: |
+        environments: |
           Development
       
