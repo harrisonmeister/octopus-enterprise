@@ -3,8 +3,8 @@ name: Build and Deploy
 on:
   push:
     branches: [ main ]
-    paths: 
-      - 'spring-crm/**'
+    paths:
+      - 'goji-app/**'
 
   workflow_dispatch:
   
@@ -14,13 +14,13 @@ env:
       
 jobs:
   build:
-    name: Build and Package Spring CRM 📦
+    name: Package Kubernetes manifests 📦
     permissions:
       id-token: write
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./spring-crm
+        working-directory: ./goji-app
     
     outputs:
       version: ${{ steps.version-generator.outputs.version }}
@@ -33,31 +33,18 @@ jobs:
         id: version-generator
         run: echo "version=$(date +'%Y.%m.%d').$GITHUB_RUN_NUMBER" >> $GITHUB_OUTPUT
       
-      # Setup build to use Java
-      - name: Set up JDK11
-        uses: actions/setup-java@v4
-        with:
-          java-version: '11'
-          distribution: 'adopt'
-          
       # Create artifacts folder
       - name: Create artifacts folder
         run: mkdir artifacts
-
-      # Build Spring CRM using maven
-      - name: Build Spring CRM
-        run: |
-          mvn clean package -Pwar -Dproject.versionNumber=${{ steps.version-generator.outputs.version }} -DdatabaseServerName=${{ vars.DATABASE_SERVER_NAME }} -DdatabaseName=${{ vars.DATABASE_NAME }} -DskipTests -DdatabaseUserName=${{ vars.DATABASE_USER_NAME }} -DdatabaseUserPassword=${{ vars.DATABASE_USER_PASSWORD }}
-          cp "target/springcrm.web.${{ steps.version-generator.outputs.version }}.war" "artifacts/springcrm.web.${{ steps.version-generator.outputs.version }}.war"
- 
-      # Package Spring CRM DB scripts
-      - name: Package database scripts for Octopus 🐙
+      
+      # Package Manifest resources
+      - name: Package manifests for Octopus 🐙
         uses: OctopusDeploy/create-zip-package-action@v3
         with:
-          package_id: 'springcrm.db'
+          package_id: 'goji-app'
           version: ${{ steps.version-generator.outputs.version }}
-          output_folder: ./spring-crm/artifacts
-          base_path: ./spring-crm/flyway
+          output_folder: ./goji-app/artifacts
+          base_path: ./goji-app/manifests
           files: |
             **/*.*
       # Login to Octopus 
@@ -71,8 +58,7 @@ jobs:
         uses: OctopusDeploy/push-package-action@v3
         with:  
           packages: |
-            ./spring-crm/artifacts/springcrm.web.${{ steps.version-generator.outputs.version }}.war
-            ./spring-crm/artifacts/springcrm.db.${{ steps.version-generator.outputs.version }}.zip
+            ./goji-app/artifacts/goji-app.${{ steps.version-generator.outputs.version }}.zip
 
   push-build-info:
     # Push Build information to Octopus
@@ -95,8 +81,7 @@ jobs:
         with:
           version: ${{ needs.build.outputs.version }}
           packages: |
-            springcrm.web
-            springcrm.db
+            goji-app
 
   create-octopus-release:
     # Create Octopus release
@@ -117,8 +102,7 @@ jobs:
       uses: OctopusDeploy/create-release-action@v3
       id: "create-release"
       with:
-        project: "Spring CRM"
-        git_ref: "refs/heads/main"
+        project: "Goji"
     outputs: 
       release_number: ${{ steps.create-release.outputs.release_number }}
 
@@ -141,10 +125,8 @@ jobs:
       uses: OctopusDeploy/deploy-release-tenanted-action@v3
       id: "deploy-release"
       with:
-        project: "Spring CRM"
+        project: "Goji"
         release_number: ${{ needs.create-octopus-release.outputs.release_number }}
         environment: |
           Development
-        tenants:
-          -Internal-
       
