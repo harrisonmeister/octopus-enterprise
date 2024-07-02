@@ -122,7 +122,7 @@ jobs:
         server: ${{ env.OCTOPUS_URL }}
         service_account_id: 4d50c8ac-1515-4351-96a7-4a82d55d55ff
     - name: Deploy to Development 🐙
-      uses: OctopusDeploy/deploy-release-tenanted-action@v3
+      uses: OctopusDeploy/deploy-release-action@v3
       id: "deploy-release"
       with:
         project: "Goji"
