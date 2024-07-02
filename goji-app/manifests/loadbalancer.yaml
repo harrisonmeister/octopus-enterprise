@@ -15,5 +15,5 @@ spec:
       targetPort: 5001
       protocol: TCP
   selector:
-    component: g-web
+    component: goji-web
     type: main
