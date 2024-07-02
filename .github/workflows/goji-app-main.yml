@@ -1,4 +1,4 @@
-name: Build and Deploy
+name: Goji App — Build and Deploy
 
 on:
   push:
