@@ -49,3 +49,7 @@ variable "SnowGlobe.WorkerPool" {
 
     value "azure-worker-pool" {}
 }
+
+variable "Octopus.Action.Kubernetes.PrintVerboseKubectlOutputOnError" {
+    value "true" {}
+}
