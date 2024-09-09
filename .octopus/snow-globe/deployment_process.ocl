@@ -1,5 +1,5 @@
 step "calculate-deployment-mode" {
-    name = "Calculate Deployment Mode"
+    name = "Calculate Deployment Modes"
 
     action {
         properties = {
