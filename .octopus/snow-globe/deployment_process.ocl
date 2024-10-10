@@ -8,12 +8,13 @@ step "manual-intervention-required" {
             Octopus.Action.Manual.BlockConcurrentDeployments = "False"
             Octopus.Action.Manual.Instructions = "Do you approve the deployment to `#{Octopus.Environment.Name}`?"
             Octopus.Action.Manual.ResponsibleTeamIds = "global/solutions-engineering"
+            Octopus.Action.RunOnServer = "false"
         }
     }
 }
 
 step "calculate-deployment-mode" {
-    name = "Calculate Deployment Modes"
+    name = "Calculate Deployment Mode"
 
     action {
         properties = {
