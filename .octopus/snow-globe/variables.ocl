@@ -32,14 +32,6 @@ variable "SnowGlobe.Cluster.Namespace" {
     value "#{SnowGlobe.CleanedSpaceName}-#{SnowGlobe.CleanedEnvironmentName}" {}
 }
 
-variable "SnowGlobe.WebApp.HttpPort" {
-    value "5000" {}
-}
-
-variable "SnowGlobe.WebApp.HttpsPort" {
-    value "5001" {}
-}
-
 variable "SnowGlobe.WebApp.ServiceName" {
     value "snowglobe-web-app" {}
 }
@@ -48,4 +40,12 @@ variable "SnowGlobe.WorkerPool" {
     type = "WorkerPool"
 
     value "azure-worker-pool" {}
+}
+
+variable "SnowGlobe.WebApp.HttpPort" {
+    value "5001" {}
+}
+
+variable "SnowGlobe.WebApp.HttpsPort" {
+    value "5002" {}
 }
