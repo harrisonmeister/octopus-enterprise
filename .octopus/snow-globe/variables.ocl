@@ -43,9 +43,9 @@ variable "SnowGlobe.WorkerPool" {
 }
 
 variable "SnowGlobe.WebApp.HttpPort" {
-    value "5001" {}
+    value "5000" {}
 }
 
 variable "SnowGlobe.WebApp.HttpsPort" {
-    value "5002" {}
+    value "5001" {}
 }
