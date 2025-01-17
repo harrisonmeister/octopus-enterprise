@@ -141,21 +141,3 @@ step "notify-status-of-deployment" {
         worker_pool = "hosted-ubuntu"
     }
 }
-
-step "run-a-script" {
-    name = "Run a Script"
-    properties = {
-        Octopus.Action.TargetRoles = "kustomize"
-    }
-
-    action {
-        action_type = "Octopus.Script"
-        properties = {
-            Octopus.Action.RunOnServer = "false"
-            Octopus.Action.Script.ScriptBody = "hello"
-            Octopus.Action.Script.ScriptSource = "Inline"
-            Octopus.Action.Script.Syntax = "PowerShell"
-        }
-        worker_pool_variable = ""
-    }
-}
