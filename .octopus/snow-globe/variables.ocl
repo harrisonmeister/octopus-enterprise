@@ -49,3 +49,7 @@ variable "SnowGlobe.WebApp.HttpPort" {
 variable "SnowGlobe.WebApp.HttpsPort" {
     value "5001" {}
 }
+
+variable "SnowGlobe.Log.Provider" {
+    value "NLog" {}
+}
