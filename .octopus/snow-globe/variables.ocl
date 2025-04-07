@@ -1,11 +1,3 @@
-variable "Octopus.Azure.Account" {
-    type = "AzureAccount"
-
-    value "octopetshop-azure-subscription" {
-        action = ["create-web-app-service"]
-    }
-}
-
 variable "Octopus.ServiceNow.ChangeRequest.Number" {
     value "" {
         environment = ["production"]
