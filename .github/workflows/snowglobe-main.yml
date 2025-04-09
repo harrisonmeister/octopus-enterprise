@@ -102,7 +102,7 @@ jobs:
       uses: OctopusDeploy/create-release-action@v3
       id: "create-release"
       with:
-        project: "Goji"
+        project: "Snow Globe"
     outputs: 
       release_number: ${{ steps.create-release.outputs.release_number }}
 
