@@ -5,7 +5,7 @@ on:
     branches: [ main ]
     paths:
       - 'snowglobe/**'
-      - '.github/snowglobe-main.yml'
+      - '.github/workflows/snowglobe-main.yml'
 
   workflow_dispatch:
   
