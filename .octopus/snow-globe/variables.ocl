@@ -45,3 +45,19 @@ variable "SnowGlobe.WebApp.HttpsPort" {
 variable "SnowGlobe.Log.Provider" {
     value "NLog" {}
 }
+
+variable "metadata:namespace" {
+    value "#{SnowGlobe.Cluster.Namespace}" {}
+}
+
+variable "metadata:name" {
+    value "#{SnowGlobe.WebApp.ServiceName}" {}
+}
+
+variable "spec:ports:1:targetPort" {
+    value "#{SnowGlobe.WebApp.HttpsPort}" {}
+}
+
+variable "spec:ports:0:targetPort" {
+    value "#{SnowGlobe.WebApp.HttpPort}" {}
+}
