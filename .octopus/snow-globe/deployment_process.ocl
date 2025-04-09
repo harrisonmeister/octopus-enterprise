@@ -61,9 +61,13 @@ step "create-web-app-service" {
                     type: main
                 
                 EOT
+            Octopus.Action.KubernetesContainers.CustomResourceYamlFileName = "loadbalancer.yaml"
             Octopus.Action.KubernetesContainers.DeploymentWait = "NoWait"
             Octopus.Action.KubernetesContainers.Namespace = "#{SnowGlobe.Cluster.Namespace}"
-            Octopus.Action.Script.ScriptSource = "Inline"
+            Octopus.Action.Package.DownloadOnTentacle = "False"
+            Octopus.Action.Package.FeedId = "octopus-server-built-in"
+            Octopus.Action.Package.PackageId = "snowglobe"
+            Octopus.Action.Script.ScriptSource = "Package"
             OctopusUseBundledTooling = "False"
         }
         worker_pool = "hosted-ubuntu"
@@ -71,6 +75,15 @@ step "create-web-app-service" {
         container {
             feed = "docker-hub"
             image = "octopusdeploy/worker-tools:6.2.1-ubuntu.22.04"
+        }
+
+        packages {
+            acquisition_location = "Server"
+            feed = "octopus-server-built-in"
+            package_id = "snowglobe"
+            properties = {
+                SelectionMode = "immediate"
+            }
         }
     }
 }
