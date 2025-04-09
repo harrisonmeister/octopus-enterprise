@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - 'goji-app/**'
+      - '.github/workflows/goji-app-main.yml'
 
   workflow_dispatch:
   
