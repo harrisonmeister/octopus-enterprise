@@ -11,7 +11,7 @@ on:
 env:
   OCTOPUS_URL: ${{ vars.OCTOPUS_SERVER_URL }}
   OCTOPUS_SPACE: ${{ vars.OCTOPUS_SERVER_SPACE }}
-      
+       
 jobs:
   build:
     name: Package Kubernetes manifests 📦
