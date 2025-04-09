@@ -1,0 +1,132 @@
+name: Snow Globe — Build and Deploy
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'snowglobe/**'
+
+  workflow_dispatch:
+  
+env:
+  OCTOPUS_URL: ${{ vars.OCTOPUS_SERVER_URL }}
+  OCTOPUS_SPACE: ${{ vars.OCTOPUS_SERVER_SPACE }}
+       
+jobs:
+  build:
+    name: Package Kubernetes manifests 📦
+    permissions:
+      id-token: write
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./snowglobe
+    
+    outputs:
+      version: ${{ steps.version-generator.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Set the build number
+      - name: Set Version number
+        id: version-generator
+        run: echo "version=$(date +'%Y.%m.%d').$GITHUB_RUN_NUMBER" >> $GITHUB_OUTPUT
+      
+      # Create artifacts folder
+      - name: Create artifacts folder
+        run: mkdir artifacts
+      
+      # Package Manifest resources
+      - name: Package manifests for Octopus 🐙
+        uses: OctopusDeploy/create-zip-package-action@v3
+        with:
+          package_id: 'snowglobe'
+          version: ${{ steps.version-generator.outputs.version }}
+          output_folder: ./snowglobe/artifacts
+          base_path: ./snowglobe/manifests
+          files: |
+            **/*.*
+      # Login to Octopus 
+      - name: Login to Octopus Deploy 🐙
+        uses: OctopusDeploy/login@v1
+        with: 
+          server: ${{ env.OCTOPUS_URL }}
+          service_account_id: 4d50c8ac-1515-4351-96a7-4a82d55d55ff
+      # Push packages to Octopus repository
+      - name: Push packages to Octopus 🐙
+        uses: OctopusDeploy/push-package-action@v3
+        with:  
+          packages: |
+            ./snowglobe/artifacts/snowglobe.${{ steps.version-generator.outputs.version }}.zip
+
+  push-build-info:
+    # Push Build information to Octopus
+    name: Push build information to Octopus 🐙
+    permissions:
+      id-token: write
+    needs: [build]
+    runs-on: ubuntu-latest
+
+    steps:
+      # Login to Octopus 
+      - name: Login to Octopus Deploy 🐙
+        uses: OctopusDeploy/login@v1
+        with: 
+          server: ${{ env.OCTOPUS_URL }}
+          service_account_id: 4d50c8ac-1515-4351-96a7-4a82d55d55ff
+      # Push Build Info    
+      - name: Push build information to Octopus Deploy 🐙
+        uses: OctopusDeploy/push-build-information-action@v3
+        with:
+          version: ${{ needs.build.outputs.version }}
+          packages: |
+            snowglobe
+
+  create-octopus-release:
+    # Create Octopus release
+    name: Create Octopus Release 🐙
+    permissions:
+      id-token: write
+    needs: [build, push-build-info]
+    runs-on: ubuntu-latest
+      
+    steps:
+    # Login to Octopus 
+    - name: Login to Octopus Deploy 🐙
+      uses: OctopusDeploy/login@v1
+      with: 
+        server: ${{ env.OCTOPUS_URL }}
+        service_account_id: 4d50c8ac-1515-4351-96a7-4a82d55d55ff
+    - name: Create Octopus Release 🐙
+      uses: OctopusDeploy/create-release-action@v3
+      id: "create-release"
+      with:
+        project: "Goji"
+    outputs: 
+      release_number: ${{ steps.create-release.outputs.release_number }}
+
+  deploy-octopus-release:
+    # Deploy Octopus release
+    name: Deploy to Development 🐙
+    permissions:
+      id-token: write
+    needs: [build, push-build-info, create-octopus-release]
+    runs-on: ubuntu-latest
+      
+    steps:
+    # Login to Octopus 
+    - name: Login to Octopus Deploy 🐙
+      uses: OctopusDeploy/login@v1
+      with: 
+        server: ${{ env.OCTOPUS_URL }}
+        service_account_id: 4d50c8ac-1515-4351-96a7-4a82d55d55ff
+    - name: Deploy to Development 🐙
+      uses: OctopusDeploy/deploy-release-action@v3
+      id: "deploy-release"
+      with:
+        project: "Snow Globe"
+        release_number: ${{ needs.create-octopus-release.outputs.release_number }}
+        environments: |
+          Development
+      
