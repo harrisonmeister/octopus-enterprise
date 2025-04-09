@@ -104,6 +104,7 @@ jobs:
       id: "create-release"
       with:
         project: "Snow Globe"
+        release_number: ${{ needs.build.outputs.version }}
         git_ref: ${{ (github.ref_type == 'tag' && github.event.repository.default_branch ) || (github.head_ref || github.ref) }}
         git_commit: ${{ github.event.after || github.event.pull_request.head.sha }}
     outputs: 

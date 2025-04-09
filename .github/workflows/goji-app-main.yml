@@ -104,6 +104,8 @@ jobs:
       id: "create-release"
       with:
         project: "Goji"
+        release_number: ${{ needs.build.outputs.version }}
+
     outputs: 
       release_number: ${{ steps.create-release.outputs.release_number }}
 
