@@ -15,5 +15,5 @@ spec:
       targetPort: 5001
       protocol: TCP
   selector:
-    component: sg-web
+    component: snowglobe-web
     type: main
