@@ -16,4 +16,4 @@ spec:
       protocol: TCP
   selector:
     component: snowglobe-web
-    type: main
+    type: main 
