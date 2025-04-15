@@ -18,7 +18,7 @@ process {
             action_type = "Octopus.Script"
             properties = {
                 Octopus.Action.GitRepository.Source = "Project"
-                Octopus.Action.Script.ScriptFileName = "gitops-simple-app/runbooks-test-script.ps1"
+                Octopus.Action.Script.ScriptFileName = "gitops-simple-app/runbooks/test-script.ps1"
                 Octopus.Action.Script.ScriptSource = "GitRepository"
                 OctopusUseBundledTooling = "False"
             }
