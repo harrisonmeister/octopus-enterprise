@@ -1,0 +1,60 @@
+step "apply-kubernetes-resources" {
+    name = "Apply Kubernetes Resources"
+    properties = {
+        Octopus.Action.TargetRoles = "demo-local-k3s-cluster"
+    }
+
+    action {
+        action_type = "Octopus.KubernetesDeployRawYaml"
+        properties = {
+            Octopus.Action.GitRepository.Source = "External"
+            Octopus.Action.Kubernetes.DeploymentTimeout = "180"
+            Octopus.Action.Kubernetes.ResourceStatusCheck = "True"
+            Octopus.Action.Kubernetes.ServerSideApply.Enabled = "True"
+            Octopus.Action.Kubernetes.ServerSideApply.ForceConflicts = "True"
+            Octopus.Action.KubernetesContainers.CustomResourceYamlFileName = "gitops-simple-app/*.yaml"
+            Octopus.Action.KubernetesContainers.Namespace = "#{Project.Cluster.Namespace}"
+            Octopus.Action.Package.JsonConfigurationVariablesTargets = "**/*.{yml,yaml}"
+            Octopus.Action.Script.ScriptSource = "GitRepository"
+        }
+        worker_pool_variable = ""
+
+        git_dependencies {
+            default_branch = "main"
+            file_path_filters = ["gitops-simple-app/*.yaml"]
+            git_credential_id = "GitCredentials-1121"
+            git_credential_type = "Library"
+            repository_uri = "https://github.com/harrisonmeister/kubernetes-apps.git"
+        }
+
+        packages "gitops-simple-app" {
+            acquisition_location = "NotAcquired"
+            feed = "docker-hub"
+            package_id = "harrisonmeister/gitops-simple-app"
+            properties = {
+                Extract = "False"
+                Purpose = "DockerImageReference"
+                SelectionMode = "immediate"
+            }
+        }
+    }
+}
+
+step "notify-status-of-deployment" {
+    name = "Notify status of deployment"
+
+    action {
+        properties = {
+            Octopus.Action.Template.Id = "ActionTemplates-2547"
+            Octopus.Action.Template.Version = "15"
+            ssn_Channel = "#{Notification.Slack.Channel}"
+            ssn_Color = "#{Notification.Slack.Status.Color}"
+            ssn_HookUrl = "#{Notification.Slack.Webhook}"
+            ssn_IconUrl = "https://octopus.com/content/resources/favicon.png"
+            ssn_Message = "#{Notification.Slack.Status.Message}"
+            ssn_Title = "#{Notification.Slack.Status.Deployment.Title}"
+            ssn_Username = "Octopus Deploy"
+        }
+        worker_pool = "hosted-ubuntu"
+    }
+}

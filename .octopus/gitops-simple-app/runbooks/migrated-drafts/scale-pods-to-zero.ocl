@@ -1,0 +1,40 @@
+name = "🌃 Scale Pods to Zero"
+default_guided_failure_mode = "EnvironmentDefault"
+description = <<-EOT
+        **WARNING**: This is a destructive operation. The service will no longer be available when scaled down.
+        
+        **Action**: Scales the deployment down to zero pods.
+        
+        **Affects**: The frontend service is effectively shut down.
+        
+        This runbook is designed to be run in non-production environments after hours to remove the nodes hosting
+        the service. This removes the cost of hosting the service out of hours.
+        EOT
+environment_scope = "FromProjectLifecycles"
+
+connectivity_policy {
+    allow_deployments_to_no_targets = true
+}
+
+run_retention_policy {
+    quantity_to_keep = 5
+}
+
+process {
+    step "run-a-kubectl-script" {
+        name = "Scale Pods to Zero"
+        properties = {
+            Octopus.Action.TargetRoles = "demo-local-k3s-cluster"
+        }
+
+        action "scale-pods-to-zero" {
+            action_type = "Octopus.KubernetesRunScript"
+            properties = {
+                Octopus.Action.Script.ScriptBody = "kubectl scale --replicas=0 deployment/#{Kubernetes.Deployment.Name} -n #{Project.Cluster.Namespace}"
+                Octopus.Action.Script.ScriptSource = "Inline"
+                Octopus.Action.Script.Syntax = "Bash"
+            }
+            worker_pool_variable = ""
+        }
+    }
+}

@@ -1,0 +1,44 @@
+variable "Kubernetes.Deployment.Name" {
+    value "simple-deployment" {}
+}
+
+variable "Project.Cluster.Namespace" {
+    value "k3s-dev" {
+        environment = ["development"]
+    }
+
+    value "k3s-test" {
+        environment = ["test"]
+    }
+
+    value "k3s-prod" {
+        environment = ["production"]
+    }
+
+    value "k3s-stag" {
+        description = ""
+        environment = ["staging"]
+    }
+}
+
+variable "spec:ports:0:nodePort" {
+    value "31000" {
+        environment = ["development"]
+    }
+
+    value "31001" {
+        environment = ["test"]
+    }
+
+    value "31002" {
+        environment = ["staging"]
+    }
+
+    value "31003" {
+        environment = ["production"]
+    }
+}
+
+variable "spec:template:spec:containers:0:image" {
+    value "docker.io/harrisonmeister/gitops-simple-app:#{Octopus.Action.Package[gitops-simple-app].PackageVersion}" {}
+}
