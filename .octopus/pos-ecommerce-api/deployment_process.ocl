@@ -1,0 +1,83 @@
+step "manual-intervention-required" {
+    name = "Manual Intervention Required"
+
+    action {
+        action_type = "Octopus.Manual"
+        environments = ["production"]
+        properties = {
+            Octopus.Action.Manual.BlockConcurrentDeployments = "False"
+            Octopus.Action.Manual.Instructions = "Do you approve the deployment to `#{Octopus.Environment.Name}`?"
+            Octopus.Action.Manual.ResponsibleTeamIds = "global/solutions-engineering"
+        }
+    }
+}
+
+step "deploy-retail-pos-api" {
+    name = "Deploy retail pos API"
+    properties = {
+        Octopus.Action.TargetRoles = "retail-pos-api"
+    }
+
+    action {
+        action_type = "Octopus.TentaclePackage"
+        properties = {
+            Octopus.Action.Package.DownloadOnTentacle = "False"
+            Octopus.Action.Package.FeedId = "octopus-server-built-in"
+            Octopus.Action.Package.PackageId = "retail-pos-api"
+        }
+        worker_pool_variable = ""
+
+        packages {
+            acquisition_location = "Server"
+            feed = "octopus-server-built-in"
+            package_id = "retail-pos-api"
+            properties = {
+                SelectionMode = "immediate"
+            }
+        }
+    }
+}
+
+step "run-tests" {
+    name = "Similulate power failure"
+
+    action "similulate-power-failure" {
+        action_type = "Octopus.Script"
+        environments = ["test"]
+        properties = {
+            Octopus.Action.Script.ScriptBody = <<-EOT
+                $version = $OctopusParameters["Octopus.Release.Number"]
+                $revision = "#{Octopus.Release.Number | VersionRevision}"
+                $moduloResult = $revision % 2
+                Write-Host "Revision is: $revision"
+                Write-Host "Modulo result is: $moduloResult"
+                exit $moduloResult
+                EOT
+            Octopus.Action.Script.ScriptSource = "Inline"
+            Octopus.Action.Script.Syntax = "PowerShell"
+            OctopusUseBundledTooling = "False"
+        }
+        tenant_tags = ["Power region/South"]
+        worker_pool = "hosted-ubuntu"
+    }
+}
+
+step "notify-status-of-deployment" {
+    condition = "Always"
+    name = "Notify status of deployment"
+
+    action {
+        properties = {
+            Octopus.Action.Template.Id = "ActionTemplates-2547"
+            Octopus.Action.Template.Version = "15"
+            ssn_Channel = "#{Notification.Slack.Channel}"
+            ssn_Color = "#{Notification.Slack.Color}"
+            ssn_HookUrl = "#{Notification.Slack.Webhook}"
+            ssn_IconUrl = "https://octopus.com/content/resources/favicon.png"
+            ssn_Message = "#{Notification.Slack.Status.Message}"
+            ssn_Title = "#{Notification.Slack.Status.Deployment.Title}"
+            ssn_Username = "Octopus Deploy"
+        }
+        worker_pool = "hosted-ubuntu"
+    }
+}
