@@ -19,13 +19,14 @@ step "approve-production-deployment" {
 }
 
 step "check-for-namespace" {
-    name = "Check for namespace (Azure discovery)"
+    name = "Check for namespace (CT az discovery)"
     properties = {
         Octopus.Action.TargetRoles = "demo-k8s-cluster"
     }
 
     action {
         action_type = "Octopus.KubernetesRunScript"
+        is_disabled = true
         notes = <<-EOT
                 Create the target namespace if it does not exist.
                 
