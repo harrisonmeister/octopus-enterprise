@@ -37,9 +37,3 @@ variable "Project.Container.Web.Memory.Limit" {
 variable "Project.Container.Web.Memory.Request" {
     value "10Mi" {}
 }
-
-variable "Project.Aws.Regions" {
-    value "us-east-2" {
-        action = ["check-for-namespace-aws-discovery"]
-    }
-}
