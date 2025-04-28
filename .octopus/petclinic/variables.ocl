@@ -43,12 +43,3 @@ variable "Project.Aws.Regions" {
         action = ["check-for-namespace-aws-discovery"]
     }
 }
-
-variable "Octopus.Azure.Account" {
-    type = "AzureAccount"
-
-    value "octopetshop-azure-subscription" {
-        action = ["check-for-namespace"]
-        description = ""
-    }
-}
