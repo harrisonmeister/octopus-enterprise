@@ -91,9 +91,12 @@ step "deploy-petclinic-helm-chart" {
                 ingress:
                   enabled: false
                 EOT
+            Octopus.Action.Kubernetes.ResourceStatusCheck = "True"
+            Octopus.Action.Kubernetes.WaitForJobs = "True"
             Octopus.Action.Package.DownloadOnTentacle = "False"
             Octopus.Action.Package.FeedId = "octopus-server-built-in"
             Octopus.Action.Package.PackageId = "petclinic-chart"
+            Octopus.Action.Script.ScriptSource = "Package"
             OctopusUseBundledTooling = "False"
         }
         worker_pool_variable = "PetClinic.WorkerPool.Azure"
