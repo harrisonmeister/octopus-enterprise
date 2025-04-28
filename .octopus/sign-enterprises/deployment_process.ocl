@@ -36,14 +36,14 @@ step "create-digitalsign-lb" {
                   replicas: 1
                   selector:
                     matchLabels:
-                      app: trivial-go-web-app
+                      app: digitalsign-webapp
                   template:
                     metadata:
                       labels:
-                        app: trivial-go-web-app
+                        app: digitalsign-webapp
                     spec:
                       containers:
-                      - name: webserver-simple
+                      - name: digitalsign-web
                         image: docker.io/harrisonmeister/gitops-simple-app:1.0
                         ports:
                         - containerPort: 8080
