@@ -1,0 +1,49 @@
+variable "DigitalSign.CleanedEnvironmentName" {
+    value "#{Octopus.Environment.Name | Replace \"[^a-zA-Z]+\" \"-\" | ToLower}" {}
+}
+
+variable "DigitalSign.CleanedSpaceName" {
+    value "#{Octopus.Space.Name | Replace \"[^a-zA-Z]+\" \"-\" | ToLower}" {}
+}
+
+variable "DigitalSign.Cluster.Namespace" {
+    value "#{Tenant.Cluster.Namespace}" {}
+}
+
+variable "DigitalSign.Log.Provider" {
+    value "NLog" {}
+}
+
+variable "DigitalSign.WebApp.HttpPort" {
+    value "5001" {}
+}
+
+variable "DigitalSign.WebApp.HttpsPort" {
+    value "5000" {}
+}
+
+variable "DigitalSign.WebApp.ServiceName" {
+    value "digitalsign-webapp" {}
+}
+
+variable "DigitalSign.WorkerPool" {
+    type = "WorkerPool"
+
+    value "azure-worker-pool" {}
+}
+
+variable "metadata:name" {
+    value "#{DigitalSign.WebApp.ServiceName}" {}
+}
+
+variable "metadata:namespace" {
+    value "#{DigitalSign.Cluster.Namespace}" {}
+}
+
+variable "spec:ports:0:targetPort" {
+    value "#{DigitalSign.WebApp.HttpPort}" {}
+}
+
+variable "spec:ports:1:targetPort" {
+    value "#{DigitalSign.WebApp.HttpsPort}" {}
+}

@@ -1,0 +1,82 @@
+step "manual-intervention-required" {
+    name = "Manual Intervention Required"
+
+    action {
+        action_type = "Octopus.Manual"
+        environments = ["production"]
+        properties = {
+            Octopus.Action.Manual.BlockConcurrentDeployments = "False"
+            Octopus.Action.Manual.Instructions = "Do you approve the deployment to `#{Octopus.Environment.Name}`?"
+            Octopus.Action.Manual.ResponsibleTeamIds = "global/solutions-engineering"
+        }
+    }
+}
+
+step "create-digitalsign-lb" {
+    name = "Create DigitalSign LB"
+    properties = {
+        Octopus.Action.TargetRoles = "demo-tenants-k8s-cluster"
+    }
+
+    action {
+        action_type = "Octopus.KubernetesDeployRawYaml"
+        properties = {
+            Octopus.Action.Kubernetes.DeploymentTimeout = "180"
+            Octopus.Action.Kubernetes.ResourceStatusCheck = "True"
+            Octopus.Action.Kubernetes.ServerSideApply.Enabled = "True"
+            Octopus.Action.Kubernetes.ServerSideApply.ForceConflicts = "True"
+            Octopus.Action.KubernetesContainers.CustomResourceYaml = <<-EOT
+                apiVersion: v1
+                kind: Service
+                metadata:
+                  name: '#{DigitalSign.WebApp.ServiceName}'
+                  namespace: '#{DigitalSign.Cluster.Namespace}'
+                spec:
+                  type: LoadBalancer
+                  ports:
+                    - name: http
+                      port: 80
+                      targetPort: #{DigitalSign.WebApp.HttpPort}
+                      protocol: TCP
+                    - name: https
+                      port: 443
+                      targetPort: #{DigitalSign.WebApp.HttpsPort}
+                      protocol: TCP
+                  selector:
+                    component: sign-web
+                    type: main
+                
+                EOT
+            Octopus.Action.KubernetesContainers.Namespace = "#{DigitalSign.Cluster.Namespace}"
+            Octopus.Action.Package.JsonConfigurationVariablesTargets = "**/*.{yml,yaml}"
+            Octopus.Action.Script.ScriptSource = "Inline"
+            OctopusUseBundledTooling = "False"
+        }
+        worker_pool = "hosted-ubuntu"
+
+        container {
+            feed = "docker-hub"
+            image = "octopusdeploy/worker-tools:6.4.0-ubuntu.22.04"
+        }
+    }
+}
+
+step "notify-status-of-deployment" {
+    condition = "Always"
+    name = "Notify status of deployment"
+
+    action {
+        properties = {
+            Octopus.Action.Template.Id = "ActionTemplates-2547"
+            Octopus.Action.Template.Version = "15"
+            ssn_Channel = "#{Notification.Slack.Channel}"
+            ssn_Color = "#{Notification.Slack.Color}"
+            ssn_HookUrl = "#{Notification.Slack.Webhook}"
+            ssn_IconUrl = "https://octopus.com/content/resources/favicon.png"
+            ssn_Message = "#{Notification.Slack.Status.Message}"
+            ssn_Title = "#{Notification.Slack.Status.Deployment.Title}"
+            ssn_Username = "Octopus Deploy"
+        }
+        worker_pool = "hosted-ubuntu"
+    }
+}
