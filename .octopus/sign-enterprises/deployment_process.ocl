@@ -8,17 +8,18 @@ step "manual-intervention-required" {
             Octopus.Action.Manual.BlockConcurrentDeployments = "False"
             Octopus.Action.Manual.Instructions = "Do you approve the deployment to `#{Octopus.Environment.Name}`?"
             Octopus.Action.Manual.ResponsibleTeamIds = "global/solutions-engineering"
+            Octopus.Action.RunOnServer = "false"
         }
     }
 }
 
 step "create-digitalsign-lb" {
-    name = "Create DigitalSign LB"
+    name = "Create DigitalSign Deployment"
     properties = {
         Octopus.Action.TargetRoles = "demo-tenants-k8s-cluster"
     }
 
-    action {
+    action "create-digitalsign-deployment" {
         action_type = "Octopus.KubernetesDeployRawYaml"
         properties = {
             Octopus.Action.Kubernetes.DeploymentTimeout = "180"
@@ -26,25 +27,26 @@ step "create-digitalsign-lb" {
             Octopus.Action.Kubernetes.ServerSideApply.Enabled = "True"
             Octopus.Action.Kubernetes.ServerSideApply.ForceConflicts = "True"
             Octopus.Action.KubernetesContainers.CustomResourceYaml = <<-EOT
-                apiVersion: v1
-                kind: Service
+                apiVersion: apps/v1
+                kind: Deployment
                 metadata:
-                  name: '#{DigitalSign.WebApp.ServiceName}'
+                  name: '#{DigitalSign.WebApp.DeploymentName}'
                   namespace: '#{DigitalSign.Cluster.Namespace}'
                 spec:
-                  type: LoadBalancer
-                  ports:
-                    - name: http
-                      port: 80
-                      targetPort: #{DigitalSign.WebApp.HttpPort}
-                      protocol: TCP
-                    - name: https
-                      port: 443
-                      targetPort: #{DigitalSign.WebApp.HttpsPort}
-                      protocol: TCP
+                  replicas: 1
                   selector:
-                    component: sign-web
-                    type: main
+                    matchLabels:
+                      app: trivial-go-web-app
+                  template:
+                    metadata:
+                      labels:
+                        app: trivial-go-web-app
+                    spec:
+                      containers:
+                      - name: webserver-simple
+                        image: docker.io/harrisonmeister/gitops-simple-app:1.0
+                        ports:
+                        - containerPort: 8080
                 
                 EOT
             Octopus.Action.KubernetesContainers.Namespace = "#{DigitalSign.Cluster.Namespace}"
