@@ -30,7 +30,7 @@ step "create-digitalsign-lb" {
                 apiVersion: apps/v1
                 kind: Deployment
                 metadata:
-                  name: '#{DigitalSign.WebApp.DeploymentName}'
+                  name: '#{DigitalSign.DeploymentName}'
                   namespace: '#{DigitalSign.Cluster.Namespace}'
                 spec:
                   replicas: 1
