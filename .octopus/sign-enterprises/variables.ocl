@@ -36,6 +36,10 @@ variable "metadata:name" {
     value "#{DigitalSign.DeploymentName}" {}
 }
 
-variable "spec:ports:0:containerPort" {
+variable "spec:containers:0:image" {
+    value "docker.io/harrisonmeister/gitops-simple-app:#{Octopus.Action.Package[gitops-simple-app].PackageVersion}" {}
+}
+
+variable "spec:containers:0:ports:0:containerPort" {
     value "#{DigitalSign.ContainerPort}" {}
 }
