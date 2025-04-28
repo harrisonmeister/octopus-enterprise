@@ -60,6 +60,17 @@ step "create-digitalsign-lb" {
             feed = "docker-hub"
             image = "octopusdeploy/worker-tools:6.4.0-ubuntu.22.04"
         }
+
+        packages "gitops-simple-app" {
+            acquisition_location = "NotAcquired"
+            feed = "docker-hub"
+            package_id = "harrisonmeister/gitops-simple-app"
+            properties = {
+                Extract = "False"
+                Purpose = "DockerImageReference"
+                SelectionMode = "immediate"
+            }
+        }
     }
 }
 
