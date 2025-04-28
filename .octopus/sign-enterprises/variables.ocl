@@ -14,36 +14,28 @@ variable "DigitalSign.Log.Provider" {
     value "NLog" {}
 }
 
-variable "DigitalSign.WebApp.HttpPort" {
-    value "5001" {}
-}
-
-variable "DigitalSign.WebApp.HttpsPort" {
-    value "5000" {}
-}
-
-variable "DigitalSign.WebApp.ServiceName" {
-    value "digitalsign-webapp" {}
-}
-
 variable "DigitalSign.WorkerPool" {
     type = "WorkerPool"
 
     value "azure-worker-pool" {}
 }
 
-variable "metadata:name" {
-    value "#{DigitalSign.WebApp.ServiceName}" {}
-}
-
 variable "metadata:namespace" {
     value "#{DigitalSign.Cluster.Namespace}" {}
 }
 
-variable "spec:ports:0:targetPort" {
-    value "#{DigitalSign.WebApp.HttpPort}" {}
+variable "DigitalSign.ContainerPort" {
+    value "5000" {}
 }
 
-variable "spec:ports:1:targetPort" {
-    value "#{DigitalSign.WebApp.HttpsPort}" {}
+variable "DigitalSign.DeploymentName" {
+    value "digitalsign-deployment" {}
+}
+
+variable "metadata:name" {
+    value "#{DigitalSign.DeploymentName}" {}
+}
+
+variable "spec:ports:0:containerPort" {
+    value "#{DigitalSign.ContainerPort}" {}
 }
