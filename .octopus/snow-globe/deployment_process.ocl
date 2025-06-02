@@ -154,18 +154,3 @@ step "notify-status-of-deployment" {
         worker_pool = "hosted-ubuntu"
     }
 }
-
-step "run-a-script" {
-    name = "Run a Script"
-
-    action {
-        action_type = "Octopus.Script"
-        properties = {
-            Octopus.Action.Script.ScriptBody = "Write-Host \"Hello\""
-            Octopus.Action.Script.ScriptSource = "Inline"
-            Octopus.Action.Script.Syntax = "PowerShell"
-            OctopusUseBundledTooling = "False"
-        }
-        worker_pool = "hosted-ubuntu"
-    }
-}
