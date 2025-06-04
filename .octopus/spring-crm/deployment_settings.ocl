@@ -1,4 +1,3 @@
-default_guided_failure_mode = "On"
 deployment_changes_template = <<-EOT
         #{each release in Octopus.Deployment.Changes}
         **Release #{release.Version}**
