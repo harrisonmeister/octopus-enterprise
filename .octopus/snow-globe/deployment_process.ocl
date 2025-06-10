@@ -98,6 +98,8 @@ step "run-tests" {
     action {
         action_type = "Octopus.Script"
         properties = {
+            Octopus.Action.AutoRetry.MaximumCount = "3"
+            Octopus.Action.AutoRetry.MinimumBackoff = "15"
             Octopus.Action.Script.ScriptBody = <<-EOT
                 $version = $OctopusParameters["Octopus.Release.Number"]
                 $revision = "#{Octopus.Release.Number | VersionRevision}"
