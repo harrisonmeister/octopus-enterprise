@@ -1,0 +1,14 @@
+step "deploy-octopus-release" {
+    name = "Deploy Octopus release"
+
+    action {
+        properties = {
+            DeployOctopusRelease.Environment = "#{Octopus.Environment.Name}"
+            DeployOctopusRelease.Project = "#{Octopus.Project.Name}"
+            DeployOctopusRelease.ReleaseNumber = "#{Octopus.Release.CurrentForEnvironment.Number}"
+            Octopus.Action.Template.Id = "ActionTemplates-3267"
+            Octopus.Action.Template.Version = "4"
+        }
+        worker_pool = "hosted-windows"
+    }
+}
