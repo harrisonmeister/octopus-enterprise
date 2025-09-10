@@ -129,7 +129,7 @@ step "rollback-to-previous-version" {
             DeployOctopusRelease.ReleaseNumber = "#{Octopus.Release.CurrentForEnvironment.Number}"
             DeployOctopusRelease.ServiceAccount = "Global.Octopus.OIDC.Account"
             Octopus.Action.Template.Id = "ActionTemplates-3267"
-            Octopus.Action.Template.Version = "9"
+            Octopus.Action.Template.Version = "10"
         }
         worker_pool = "hosted-ubuntu"
 
