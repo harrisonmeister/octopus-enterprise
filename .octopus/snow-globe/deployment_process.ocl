@@ -124,12 +124,12 @@ step "rollback-to-previous-version" {
 
     action "rollback-on-failure" {
         properties = {
-            DeployOctopusRelease.ApiKey = "#{SnowGlobe.OctopusApiKey}"
             DeployOctopusRelease.Environment = "#{Octopus.Environment.Name}"
             DeployOctopusRelease.Project = "#{Octopus.Project.Name}"
             DeployOctopusRelease.ReleaseNumber = "#{Octopus.Release.CurrentForEnvironment.Number}"
+            DeployOctopusRelease.ServiceAccount = "Global.Octopus.OIDC.Account"
             Octopus.Action.Template.Id = "ActionTemplates-3267"
-            Octopus.Action.Template.Version = "6"
+            Octopus.Action.Template.Version = "8"
         }
         worker_pool = "hosted-ubuntu"
 
