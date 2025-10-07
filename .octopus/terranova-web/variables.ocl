@@ -1,0 +1,37 @@
+variable "image:tag" {
+    value "#{Octopus.Action[Deploy terranova-web].Package[terranova-web].PackageVersion}" {}
+}
+
+variable "Project.HelmChart.Directory" {
+    value "helm-charts/terranova-web" {}
+}
+
+variable "Project.HelmChart.EnvironmentValuesFilename" {
+    value "values-#{Global.Environment.Abbreviation}.yaml" {}
+}
+
+variable "Project.HelmChart.GitRepository" {
+    value "https://github.com/harrisonmeister/kubernetes-apps.git" {}
+}
+
+variable "Project.HelmChart.Namespace" {
+    value "terranova-web-prod" {
+        environment = ["production"]
+    }
+
+    value "terranova-web-test" {
+        environment = ["test"]
+    }
+
+    value "terranova-web-dev" {
+        environment = ["development"]
+    }
+
+    value "terranova-web-#{Octopus.Environment.Name | ToLower}" {}
+}
+
+variable "Project.ImageAttestations.DockerAccount" {
+    type = "UsernamePasswordAccount"
+
+    value "docker-harrisonmeister" {}
+}

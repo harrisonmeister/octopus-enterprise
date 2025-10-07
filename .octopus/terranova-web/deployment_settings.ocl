@@ -1,0 +1,44 @@
+release_notes_template = <<-EOT
+        ### Release Notes
+        - **Release Number**: `#{Octopus.Release.Number}`
+        
+        #### Commits:
+        #{each package in Octopus.Release.Package}
+        #{each commit in package.Commits}
+        - **Commit Message**: #{commit.Comment}
+        #{/each}
+        #{/each}
+        
+        #### Packages
+        #{each package in Octopus.Release.Package}
+        - #{package.PackageId} #{package.Version}
+        #{each workItem in package.WorkItems}
+            - [#{workItem.Id}](#{workItem.LinkUrl}) - #{workItem.Description}
+        #{/each}
+        #{/each}
+        
+        #### Builds:
+        #{each build in Octopus.Release.Builds}
+        - **Build:** [#{build.BuildNumber}](#{build.BuildUrl})
+        - **Branch:** `#{build.Branch}`
+        - **Environment:** `#{build.BuildEnvironment}`
+        - **Repository:** `#{build.VcsRoot}`
+        - **Commit Hash:** [#{build.VcsCommitNumber}](#{build.VcsCommitUrl})
+        
+            **Packages:**
+            #{each package in build.Packages}
+            - #{package.PackageId}: `#{package.Version}`
+            #{/each}
+        #{/each}
+        EOT
+
+connectivity_policy {
+    allow_deployments_to_no_targets = true
+}
+
+versioning_strategy {
+    donor_package {
+        package = "terranova-web"
+        step = "deploy-terranova-web"
+    }
+}

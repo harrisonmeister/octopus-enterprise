@@ -1,0 +1,129 @@
+step "notify-deployment-start" {
+    name = "Notify deployment start"
+
+    action {
+        properties = {
+            Octopus.Action.Template.Id = "ActionTemplates-2547"
+            Octopus.Action.Template.Version = "15"
+            ssn_Channel = "#{Notification.Slack.Channel}"
+            ssn_Color = "good"
+            ssn_HookUrl = "#{Notification.Slack.Webhook}"
+            ssn_IconUrl = "https://octopus.com/content/resources/favicon.png"
+            ssn_Message = "#{Notification.Slack.Status.Message}"
+            ssn_Title = "#{Notification.Slack.Status.DeploymentStarted.Title}"
+            ssn_Username = "Octopus Deploy"
+        }
+        worker_pool = "hosted-ubuntu"
+    }
+}
+
+process_template "verify-terranova-web-image" {
+    name = "Verify terranova-web image"
+    process_template_slug = "dsc-verify-build-artifacts-docker"
+    version_mask = "1.X"
+
+    package_parameter "Template.SBOM.Artifact" {
+        feed = "octopus-server-built-in"
+        package_id = "terranova-web-sbom"
+    }
+
+    parameter "Template.Docker.Account" {
+        value = "Project.ImageAttestations.DockerAccount"
+    }
+
+    parameter "Template.Git.AuthToken" {
+        value = "#{Project.ImageAttestations.GitHubToken}"
+    }
+
+    parameter "Template.Verify.WorkerPool" {
+        value = "WorkerPools-2666"
+    }
+
+    parameter "Template.Verify.ExecutionContainerFeed" {
+        value = "Feeds-3810"
+    }
+}
+
+step "deploy-terranova-web" {
+    name = "Deploy terranova-web"
+    properties = {
+        Octopus.Action.TargetRoles = "demo-local-k3s-cluster"
+    }
+
+    action {
+        action_type = "Octopus.HelmChartUpgrade"
+        properties = {
+            Octopus.Action.GitRepository.Source = "External"
+            Octopus.Action.Helm.AdditionalArgs = "--create-namespace"
+            Octopus.Action.Helm.ChartDirectory = "#{Project.HelmChart.Directory}"
+            Octopus.Action.Helm.Namespace = "#{Project.HelmChart.Namespace}"
+            Octopus.Action.Helm.ResetValues = "True"
+            Octopus.Action.Helm.TemplateValuesSources = <<-EOT
+                [
+                  {
+                    "Type": "KeyValues",
+                    "Value": {
+                      "image.tag": "#{Octopus.Action[Deploy terranova-web].Package[terranova-web].PackageVersion}"
+                    }
+                  },
+                  {
+                    "Type": "GitRepository",
+                    "GitRepositorySource": "External",
+                    "GitDependencyName": "TemplateValues-1",
+                    "ValuesFilePaths": "helm-charts/terranova-web/values.yaml\nhelm-charts/terranova-web/#{Project.HelmChart.EnvironmentValuesFilename}"
+                  }
+                ]
+                EOT
+            Octopus.Action.Kubernetes.ResourceStatusCheck = "True"
+            Octopus.Action.Script.ScriptSource = "GitRepository"
+        }
+        worker_pool = "hosted-windows"
+        worker_pool_variable = ""
+
+        git_dependencies {
+            default_branch = "main"
+            git_credential_id = "GitCredentials-1121"
+            git_credential_type = "Library"
+            repository_uri = "#{Project.HelmChart.GitRepository}"
+        }
+
+        git_dependencies "TemplateValues-1" {
+            default_branch = "main"
+            git_credential_id = "GitCredentials-1121"
+            git_credential_type = "Library"
+            repository_uri = "#{Project.HelmChart.GitRepository}"
+        }
+
+        packages "terranova-web" {
+            acquisition_location = "NotAcquired"
+            feed = "docker-hub"
+            package_id = "harrisonmeister/terranova-web"
+            properties = {
+                Extract = "False"
+                Purpose = "DockerImageReference"
+                SelectionMode = "immediate"
+                ValuesFilePath = ""
+            }
+        }
+    }
+}
+
+step "notify-deployment-status" {
+    condition = "Always"
+    name = "Notify deployment status"
+
+    action {
+        properties = {
+            Octopus.Action.Template.Id = "ActionTemplates-2547"
+            Octopus.Action.Template.Version = "15"
+            ssn_Channel = "#{Notification.Slack.Channel}"
+            ssn_Color = "#{Notification.Slack.Color}"
+            ssn_HookUrl = "#{Notification.Slack.Webhook}"
+            ssn_IconUrl = "https://octopus.com/content/resources/favicon.png"
+            ssn_Message = "#{Notification.Slack.Status.Message}"
+            ssn_Title = "#{Notification.Slack.Status.DeploymentStarted.Title}"
+            ssn_Username = "Octopus Deploy"
+        }
+        worker_pool = "hosted-ubuntu"
+    }
+}
