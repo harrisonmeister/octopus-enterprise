@@ -1,7 +1,3 @@
-variable "image:tag" {
-    value "#{Octopus.Action[Deploy terranova-web].Package[terranova-web].PackageVersion}" {}
-}
-
 variable "Project.HelmChart.Directory" {
     value "helm-charts/terranova-web" {}
 }
