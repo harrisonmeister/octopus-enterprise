@@ -31,3 +31,9 @@ variable "Project.ImageAttestations.DockerAccount" {
 
     value "docker-harrisonmeister" {}
 }
+
+variable "AwsAccount" {
+    type = "AmazonWebServicesAccount"
+
+    value "aws-account" {}
+}
