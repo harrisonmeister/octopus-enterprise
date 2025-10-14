@@ -10,4 +10,28 @@ run_retention_policy {
     quantity_to_keep = 100
 }
 
-process {}
+process {
+    step "run-an-aws-cli-script" {
+        name = "Run an AWS CLI Script"
+
+        action {
+            action_type = "Octopus.AwsRunScript"
+            properties = {
+                Octopus.Action.Aws.AssumeRole = "False"
+                Octopus.Action.Aws.Region = "eu-west-2"
+                Octopus.Action.AwsAccount.UseInstanceRole = "False"
+                Octopus.Action.AwsAccount.Variable = "AwsAccount"
+                Octopus.Action.Script.ScriptBody = "aws --version"
+                Octopus.Action.Script.ScriptSource = "Inline"
+                Octopus.Action.Script.Syntax = "PowerShell"
+                OctopusUseBundledTooling = "False"
+            }
+            worker_pool = "homeserver-kubernetes-workers"
+
+            container {
+                feed = "docker-hub"
+                image = "octopuslabs/aws-workertools"
+            }
+        }
+    }
+}
