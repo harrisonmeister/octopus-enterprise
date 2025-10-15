@@ -48,6 +48,11 @@ process {
                 OctopusUseBundledTooling = "False"
             }
             worker_pool = "hosted-ubuntu"
+
+            container {
+                feed = "docker-hub"
+                image = "octopuslabs/github-workertools"
+            }
         }
     }
 }
