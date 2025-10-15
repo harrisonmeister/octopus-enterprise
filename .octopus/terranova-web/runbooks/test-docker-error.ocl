@@ -11,26 +11,6 @@ run_retention_policy {
 }
 
 process {
-    step "docker-login" {
-        name = "docker login"
-
-        action {
-            action_type = "Octopus.Script"
-            properties = {
-                Octopus.Action.Script.ScriptBody = <<-EOT
-                    $dockerUser = $OctopusParameters["Project.ImageAttestations.DockerAccount.Username"]
-                    $dockerPassword = $OctopusParameters["Project.ImageAttestations.DockerAccount.Password"]
-                    
-                    docker login --username $dockerUser --password $dockerPassword
-                    EOT
-                Octopus.Action.Script.ScriptSource = "Inline"
-                Octopus.Action.Script.Syntax = "PowerShell"
-                OctopusUseBundledTooling = "False"
-            }
-            worker_pool = "hosted-ubuntu"
-        }
-    }
-
     step "docker-login-via-stdin" {
         name = "docker login via stdin"
 
