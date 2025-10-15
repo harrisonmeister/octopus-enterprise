@@ -21,7 +21,13 @@ process {
                     $dockerUser = $OctopusParameters["Project.ImageAttestations.DockerAccount.Username"]
                     $dockerPassword = $OctopusParameters["Project.ImageAttestations.DockerAccount.Password"]
                     
-                    $dockerPassword | docker login --username $dockerUser --password-stdin
+                    $dockerPassword | docker login --username $dockerUser --password-stdin 2> $null
+                    
+                    if ($LASTEXITCODE -ne 0) {
+                        # If the exit code is non-zero, it indicates a fatal failure (invalid password)
+                        Write-Error "Docker login failed for user '$dockerUser'. Check the logs for authentication error details."
+                        exit 1 # Explicitly fail the script step
+                    }
                     EOT
                 Octopus.Action.Script.ScriptSource = "Inline"
                 Octopus.Action.Script.Syntax = "PowerShell"
