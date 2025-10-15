@@ -19,8 +19,8 @@ process {
             properties = {
                 Octopus.Action.Script.ScriptBody = <<-EOT
                     $dockerUser = $OctopusParameters["Project.ImageAttestations.DockerAccount.Username"]
-                    $dockerPassword = $OctopusParameters["Project.ImageAttestations.DockerAccount.Password"]
-                    
+                    #$dockerPassword = $OctopusParameters["Project.ImageAttestations.DockerAccount.Password"]
+                    $dockerPassword = "blah"
                     $dockerPassword | docker login --username $dockerUser --password-stdin 2> $null
                     
                     if ($LASTEXITCODE -ne 0) {
