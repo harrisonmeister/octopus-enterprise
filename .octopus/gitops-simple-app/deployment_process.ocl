@@ -12,16 +12,17 @@ step "apply-kubernetes-resources" {
             Octopus.Action.Kubernetes.ResourceStatusCheck = "True"
             Octopus.Action.Kubernetes.ServerSideApply.Enabled = "True"
             Octopus.Action.Kubernetes.ServerSideApply.ForceConflicts = "True"
-            Octopus.Action.KubernetesContainers.CustomResourceYamlFileName = "gitops-simple-app/*.yaml"
+            Octopus.Action.KubernetesContainers.CustomResourceYamlFileName = "apps/gitops-simple-app/*.yaml"
             Octopus.Action.KubernetesContainers.Namespace = "#{Project.Cluster.Namespace}"
             Octopus.Action.Package.JsonConfigurationVariablesTargets = "**/*.{yml,yaml}"
             Octopus.Action.Script.ScriptSource = "GitRepository"
         }
+        worker_pool = "hosted-windows"
         worker_pool_variable = ""
 
         git_dependencies {
             default_branch = "main"
-            file_path_filters = ["gitops-simple-app/*.yaml"]
+            file_path_filters = ["apps/gitops-simple-app/*.yaml"]
             git_credential_id = "GitCredentials-1121"
             git_credential_type = "Library"
             repository_uri = "https://github.com/harrisonmeister/kubernetes-apps.git"
