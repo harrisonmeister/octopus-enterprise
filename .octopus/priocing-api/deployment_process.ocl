@@ -38,16 +38,18 @@ step "terraform-plan" {
 }
 
 step "tranche-approval" {
-    name = "Tranche approval"
+    name = "Tranche 2 approval"
 
-    action {
+    action "tranche-2-approval" {
         action_type = "Octopus.Manual"
         environments = ["production"]
         properties = {
             Octopus.Action.Manual.BlockConcurrentDeployments = "False"
             Octopus.Action.Manual.Instructions = "Please confirm the plan is accurate and you wish to deploy to `#{Octopus.Environment.Name}`"
             Octopus.Action.Manual.ResponsibleTeamIds = "global/solutions-engineering"
+            Octopus.Action.RunOnServer = "false"
         }
+        tenant_tags = ["Tranche 2 approval required/Approval required"]
     }
 }
 
