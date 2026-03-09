@@ -1,0 +1,110 @@
+step "terraform-plan" {
+    name = "Terraform plan"
+
+    action {
+        action_type = "Octopus.TerraformPlan"
+        properties = {
+            Octopus.Action.Aws.AssumeRole = "False"
+            Octopus.Action.Aws.Region = "us-east-2"
+            Octopus.Action.AwsAccount.UseInstanceRole = "False"
+            Octopus.Action.AwsAccount.Variable = "Tenant.AWS.Account"
+            Octopus.Action.GoogleCloud.ImpersonateServiceAccount = "False"
+            Octopus.Action.GoogleCloud.UseVMServiceAccount = "True"
+            Octopus.Action.Script.ScriptSource = "Inline"
+            Octopus.Action.Terraform.AllowPluginDownloads = "True"
+            Octopus.Action.Terraform.AzureAccount = "False"
+            Octopus.Action.Terraform.GoogleCloudAccount = "False"
+            Octopus.Action.Terraform.ManagedAccount = "AWS"
+            Octopus.Action.Terraform.PlanJsonOutput = "False"
+            Octopus.Action.Terraform.RunAutomaticFileSubstitution = "True"
+            Octopus.Action.Terraform.Template = <<-EOT
+                resource "random_id" "server_suffix" {
+                  byte_length = 4
+                }
+                
+                resource "local_file" "simulated_instance" {
+                  content  = "Server ID: ${random_id.server_suffix.hex}\nStatus: Active"
+                  filename = "${path.module}/server-${random_id.server_suffix.hex}.log"
+                }
+                
+                output "file_path" {
+                  value = local_file.simulated_instance.filename
+                }
+                EOT
+            Octopus.Action.Terraform.TemplateParameters = "{}"
+        }
+        worker_pool = "hosted-ubuntu"
+    }
+}
+
+step "tranche-approval" {
+    name = "Tranche approval"
+
+    action {
+        action_type = "Octopus.Manual"
+        environments = ["production"]
+        properties = {
+            Octopus.Action.Manual.BlockConcurrentDeployments = "False"
+            Octopus.Action.Manual.Instructions = "Please confirm the plan is accurate and you wish to deploy to `#{Octopus.Environment.Name}`"
+            Octopus.Action.Manual.ResponsibleTeamIds = "global/solutions-engineering"
+        }
+    }
+}
+
+step "terraform-apply" {
+    name = "Terraform apply"
+
+    action {
+        action_type = "Octopus.TerraformApply"
+        properties = {
+            Octopus.Action.Aws.AssumeRole = "False"
+            Octopus.Action.Aws.Region = "us-east-2"
+            Octopus.Action.AwsAccount.UseInstanceRole = "False"
+            Octopus.Action.AwsAccount.Variable = "Tenant.AWS.Account"
+            Octopus.Action.GoogleCloud.ImpersonateServiceAccount = "False"
+            Octopus.Action.GoogleCloud.UseVMServiceAccount = "True"
+            Octopus.Action.Script.ScriptSource = "Inline"
+            Octopus.Action.Terraform.AllowPluginDownloads = "True"
+            Octopus.Action.Terraform.AzureAccount = "False"
+            Octopus.Action.Terraform.GoogleCloudAccount = "False"
+            Octopus.Action.Terraform.ManagedAccount = "AWS"
+            Octopus.Action.Terraform.PlanJsonOutput = "False"
+            Octopus.Action.Terraform.RunAutomaticFileSubstitution = "True"
+            Octopus.Action.Terraform.Template = <<-EOT
+                resource "random_id" "server_suffix" {
+                  byte_length = 4
+                }
+                
+                resource "local_file" "simulated_instance" {
+                  content  = "Server ID: ${random_id.server_suffix.hex}\nStatus: Active"
+                  filename = "${path.module}/server-${random_id.server_suffix.hex}.log"
+                }
+                
+                output "file_path" {
+                  value = local_file.simulated_instance.filename
+                }
+                EOT
+            Octopus.Action.Terraform.TemplateParameters = "{}"
+        }
+        worker_pool = "hosted-ubuntu"
+    }
+}
+
+step "notify-status-of-deployment" {
+    name = "Notify status of deployment"
+
+    action {
+        properties = {
+            Octopus.Action.Template.Id = "ActionTemplates-2547"
+            Octopus.Action.Template.Version = "15"
+            ssn_Channel = "#{Notification.Slack.Channel}"
+            ssn_Color = "#{Notification.Slack.Status.Color}"
+            ssn_HookUrl = "#{Notification.Slack.Webhook}"
+            ssn_IconUrl = "https://octopus.com/content/resources/favicon.png"
+            ssn_Message = "#{Notification.Slack.Status.Message}"
+            ssn_Title = "#{Notification.Slack.Status.Deployment.Title}"
+            ssn_Username = "Octopus Deploy"
+        }
+        worker_pool = "hosted-ubuntu"
+    }
+}
