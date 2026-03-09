@@ -32,8 +32,14 @@ step "terraform-plan" {
                 }
                 EOT
             Octopus.Action.Terraform.TemplateParameters = "{}"
+            OctopusUseBundledTooling = "False"
         }
         worker_pool = "hosted-ubuntu"
+
+        container {
+            feed = "docker-hub"
+            image = "octopusdeploy/worker-tools:6.5.0-ubuntu.22.04"
+        }
     }
 }
 
@@ -87,8 +93,14 @@ step "terraform-apply" {
                 }
                 EOT
             Octopus.Action.Terraform.TemplateParameters = "{}"
+            OctopusUseBundledTooling = "False"
         }
         worker_pool = "hosted-ubuntu"
+
+        container {
+            feed = "docker-hub"
+            image = "octopusdeploy/worker-tools:6.5.0-ubuntu.22.04"
+        }
     }
 }
 
