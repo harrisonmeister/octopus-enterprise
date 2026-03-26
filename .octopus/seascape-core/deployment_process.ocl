@@ -25,7 +25,8 @@ step "update-aetherflow-kustomize-image-tags" {
         action_type = "Octopus.ArgoCDUpdateImageTags"
         properties = {
             Octopus.Action.ArgoCD.CommitMessageSummary = "Octopus Deploy updated image versions"
-            Octopus.Action.ArgoCD.CommitMethod = "DirectCommit"
+            Octopus.Action.ArgoCD.CommitMethod = "PerEnvironment"
+            Octopus.Action.ArgoCD.PullRequest.Environments = "production"
         }
         worker_pool = "hosted-ubuntu"
 
