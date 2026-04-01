@@ -1,0 +1,25 @@
+variable "Database.ConnectionString" {
+    value "Server=#{Database.Server};Initial Catalog=#{Database.Name};Persist Security Info=False;User ID=#{Database.User};Password=#{Database.UserPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;" {}
+}
+
+variable "Database.User" {
+    value "octoadmin" {}
+}
+
+variable "Database.Server" {
+    value "tcp:octo-demo-dev.database.windows.net,1433" {
+        environment = ["development"]
+    }
+
+    value "tcp:octo-demo.database.windows.net,1433" {
+        description = ""
+    }
+}
+
+variable "Database.Name" {
+    value "pos-commerce-api-#{Octopus.Environment.Name}-#{Octopus.Deployment.Tenant.Name}" {}
+}
+
+variable "Database.Admin.User" {
+    value "octouser" {}
+}
