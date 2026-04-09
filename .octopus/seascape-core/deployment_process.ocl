@@ -27,6 +27,7 @@ step "update-aetherflow-kustomize-image-tags" {
             Octopus.Action.ArgoCD.CommitMessageSummary = "Octopus Deploy updated image versions"
             Octopus.Action.ArgoCD.CommitMethod = "PerEnvironment"
             Octopus.Action.ArgoCD.PullRequest.Environments = "production"
+            Octopus.Action.ArgoCD.StepVerification.Method = "PullRequestMerged"
         }
         worker_pool = "hosted-ubuntu"
 
