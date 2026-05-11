@@ -1,0 +1,15 @@
+parameter "ProjectTemplate.WorkerPool" {
+    value = "WorkerPools-2666"
+}
+
+parameter "ProjectTemplate.Kubernetes.TargetTags" {
+    value = "demo-k8s-cluster"
+}
+
+parameter "ProjectTemplate.Approval.Environments" {
+    value = "Environments-2443"
+}
+
+parameter "ProjectTemplate.Kubernetes.GitFilePaths" {
+    value = "manifests/groovy-jellyfish/*"
+}
