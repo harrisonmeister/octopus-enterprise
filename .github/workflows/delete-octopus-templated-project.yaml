@@ -1,0 +1,159 @@
+name: Delete Octopus Project
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: "Name of the project to delete"
+        required: true
+        type: string
+
+jobs:
+  delete-project:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # Required for OIDC token request
+      contents: read
+
+    env:
+      OCTOPUS_URL:              ${{ vars.OCTOPUS_SERVER_URL }}
+      OCTOPUS_SPACE_NAME:       ${{ vars.OCTOPUS_SERVER_SPACE }}
+      OCTOPUS_ENTERPRISE_REPO:  harrisonmeister/octopus-enterprise
+      KUBERNETES_APPS_REPO:     harrisonmeister/kubernetes-apps
+      GIT_BOT_NAME:             github-actions[bot]
+      GIT_BOT_EMAIL:            github-actions[bot]@users.noreply.github.com
+
+    steps:
+      # -----------------------------------------------------------------------
+      # Login
+      # -----------------------------------------------------------------------
+      - name: Login to Octopus Deploy
+        uses: OctopusDeploy/login@v1
+        with:
+          server: ${{ env.OCTOPUS_URL }}
+          service_account_id: 4d50c8ac-1515-4351-96a7-4a82d55d55ff
+
+      # -----------------------------------------------------------------------
+      # Look up Space ID by name
+      # -----------------------------------------------------------------------
+      - name: Look up Space ID
+        id: space
+        run: |
+          ENCODED_SPACE="${OCTOPUS_SPACE_NAME// /+}"
+          SPACE_ID=$(curl -sf \
+            -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
+            "$OCTOPUS_URL/api/spaces?partialName=$ENCODED_SPACE" \
+            | jq -r --arg name "$OCTOPUS_SPACE_NAME" '.Items[] | select(.Name == $name) | .Id')
+
+          if [ -z "$SPACE_ID" ]; then
+            echo "ERROR: Could not find space '$OCTOPUS_SPACE_NAME'"
+            exit 1
+          fi
+
+          echo "space_id=$SPACE_ID" >> $GITHUB_OUTPUT
+          echo "Space ID: $SPACE_ID"
+
+      # -----------------------------------------------------------------------
+      # Look up Project ID — skip everything if it doesn't exist
+      # -----------------------------------------------------------------------
+      - name: Look up Project ID
+        id: project
+        run: |
+          ENCODED_NAME=$(jq -rn --arg n "${{ inputs.project_name }}" '$n | @uri')
+          PROJECT_ID=$(curl -sf \
+            -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
+            "$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/projects?partialName=$ENCODED_NAME" \
+            | jq -r --arg name "${{ inputs.project_name }}" '.Items[] | select(.Name == $name) | .Id')
+
+          if [ -z "$PROJECT_ID" ]; then
+            echo "Project '${{ inputs.project_name }}' does not exist — nothing to delete"
+            echo "exists=false" >> $GITHUB_OUTPUT
+          else
+            echo "Project ID: $PROJECT_ID"
+            echo "project_id=$PROJECT_ID" >> $GITHUB_OUTPUT
+            echo "exists=true" >> $GITHUB_OUTPUT
+          fi
+
+      # -----------------------------------------------------------------------
+      # Delete the Octopus project
+      # -----------------------------------------------------------------------
+      - name: Delete Octopus project
+        if: steps.project.outputs.exists == 'true'
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -X DELETE \
+            -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
+            "$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/projects/${{ steps.project.outputs.project_id }}")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+
+          if [ "$HTTP_CODE" -ge 400 ]; then
+            echo "ERROR: Failed to delete project (HTTP $HTTP_CODE)"
+            echo "$BODY" | jq .
+            exit 1
+          fi
+
+          echo "Project '${{ inputs.project_name }}' deleted successfully"
+
+      # -----------------------------------------------------------------------
+      # Delete .octopus/{project_name} from octopus-enterprise repo
+      # -----------------------------------------------------------------------
+      - name: Checkout octopus-enterprise repository
+        if: steps.project.outputs.exists == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.OCTOPUS_ENTERPRISE_REPO }}
+          token: ${{ secrets.GH_ACTIONS_PAT }}
+          path: octopus-enterprise
+
+      - name: Delete project folder from octopus-enterprise
+        if: steps.project.outputs.exists == 'true'
+        run: |
+          PROJECT_NAME="${{ inputs.project_name }}"
+          TARGET_DIR="octopus-enterprise/.octopus/$PROJECT_NAME"
+
+          if [ ! -d "$TARGET_DIR" ]; then
+            echo "WARNING: Folder '$TARGET_DIR' not found — skipping"
+            exit 0
+          fi
+
+          cd octopus-enterprise
+          git config user.name  "$GIT_BOT_NAME"
+          git config user.email "$GIT_BOT_EMAIL"
+          git rm -rf ".octopus/$PROJECT_NAME"
+          git commit -m "Remove project configuration for $PROJECT_NAME"
+          git push
+
+          echo "Deleted .octopus/$PROJECT_NAME from $OCTOPUS_ENTERPRISE_REPO"
+
+      # -----------------------------------------------------------------------
+      # Delete manifests/{project_name} from kubernetes-apps repo
+      # -----------------------------------------------------------------------
+      - name: Checkout kubernetes-apps repository
+        if: steps.project.outputs.exists == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.KUBERNETES_APPS_REPO }}
+          token: ${{ secrets.GH_ACTIONS_PAT }}
+          path: kubernetes-apps
+
+      - name: Delete project folder from kubernetes-apps
+        if: steps.project.outputs.exists == 'true'
+        run: |
+          PROJECT_NAME="${{ inputs.project_name }}"
+          TARGET_DIR="kubernetes-apps/manifests/$PROJECT_NAME"
+
+          if [ ! -d "$TARGET_DIR" ]; then
+            echo "WARNING: Folder '$TARGET_DIR' not found — skipping"
+            exit 0
+          fi
+
+          cd kubernetes-apps
+          git config user.name  "$GIT_BOT_NAME"
+          git config user.email "$GIT_BOT_EMAIL"
+          git rm -rf "manifests/$PROJECT_NAME"
+          git commit -m "Remove manifests for $PROJECT_NAME"
+          git push
+
+          echo "Deleted manifests/$PROJECT_NAME from $KUBERNETES_APPS_REPO"
