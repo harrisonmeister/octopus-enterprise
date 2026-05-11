@@ -277,6 +277,29 @@ jobs:
           echo "GitHub App Connection ID: $CONNECTION_ID"
 
       # -----------------------------------------------------------------------
+      # Set project icon
+      # -----------------------------------------------------------------------
+      - name: Set project icon
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -X PUT \
+            -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"IconId":"anchor","IconColor":"#00874D"}' \
+            "$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/projects/${{ steps.create_project.outputs.project_id }}/logo/icon")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+
+          if [ "$HTTP_CODE" -ge 400 ]; then
+            echo "ERROR: Failed to set project icon (HTTP $HTTP_CODE)"
+            echo "$BODY" | jq .
+            exit 1
+          fi
+
+          echo "Project icon set successfully"
+
+      # -----------------------------------------------------------------------
       # Convert project to version control
       # -----------------------------------------------------------------------
       - name: Convert project to version control
