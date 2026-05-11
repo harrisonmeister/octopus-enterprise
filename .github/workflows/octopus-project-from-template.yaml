@@ -306,7 +306,7 @@ jobs:
 
           RESPONSE=$(curl -s -w "\n%{http_code}" \
             -X POST \
-            -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
+            -H "X-Octopus-ApiKey: ${{ secrets.OCTOPUS_API_KEY }}" \
             -H "Content-Type: application/json" \
             -d "$PAYLOAD" \
             "$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/projects/${{ steps.create_project.outputs.project_id }}/git/convert")
