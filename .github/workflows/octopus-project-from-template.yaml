@@ -23,6 +23,7 @@ jobs:
       WORKER_POOL_NAME:         Hosted Ubuntu
       PROJECT_TEMPLATE_SLUG:    mh-kubernetes-yaml-manifests
       PROJECT_GROUP_NAME:       Kubernetes - YAML
+      PROJECT_GROUP_SLUG:       kubernetes-yaml
       LIFECYCLE_NAME:           Default Lifecycle
 
     steps:
@@ -62,11 +63,10 @@ jobs:
       - name: Look up Project Group ID
         id: project_group
         run: |
-          PARTIAL_PG="${PROJECT_GROUP_NAME%% *}"
           PROJECT_GROUP_ID=$(curl -sf \
             -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
-            "$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/projectgroups?partialName=$PARTIAL_PG" \
-            | jq -r --arg name "$PROJECT_GROUP_NAME" '.Items[] | select(.Name == $name) | .Id')
+            "$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/projectgroups?partialName=Kubernetes" \
+            | jq -r --arg slug "$PROJECT_GROUP_SLUG" '.Items[] | select(.Slug == $slug) | .Id')
 
           if [ -z "$PROJECT_GROUP_ID" ]; then
             echo "ERROR: Could not find project group '$PROJECT_GROUP_NAME'"
