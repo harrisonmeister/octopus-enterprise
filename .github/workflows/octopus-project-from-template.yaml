@@ -67,20 +67,30 @@ jobs:
           echo "DEBUG: Fetching project groups from: $API_URL"
           echo "DEBUG: Looking for slug: $PROJECT_GROUP_SLUG"
 
-          RAW_RESPONSE=$(curl -sf \
+          RAW_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
             -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
             "$API_URL")
 
+          HTTP_STATUS=$(echo "$RAW_RESPONSE" | tail -1 | sed 's/HTTP_STATUS://')
+          BODY=$(echo "$RAW_RESPONSE" | head -n -1)
+
+          echo "DEBUG: HTTP status: $HTTP_STATUS"
           echo "DEBUG: Raw response:"
-          echo "$RAW_RESPONSE" | jq .
+          echo "$BODY" | jq . || echo "$BODY"
+
+          if [ "$HTTP_STATUS" -ge 400 ]; then
+            echo "ERROR: API call failed with HTTP $HTTP_STATUS"
+            exit 1
+          fi
 
           echo "DEBUG: Items found:"
-          echo "$RAW_RESPONSE" | jq -r '.Items[] | "\(.Id) | \(.Name) | \(.Slug)"'
+          echo "$BODY" | jq -r '.Items[] | "\(.Id) | \(.Name) | \(.Slug)"'
 
-          PROJECT_GROUP_ID=$(echo "$RAW_RESPONSE" \
+          PROJECT_GROUP_ID=$(echo "$BODY" \
             | jq -r --arg slug "$PROJECT_GROUP_SLUG" '.Items[] | select(.Slug == $slug) | .Id')
 
           echo "DEBUG: Matched PROJECT_GROUP_ID: '$PROJECT_GROUP_ID'"
+
 
           if [ -z "$PROJECT_GROUP_ID" ]; then
             echo "ERROR: Could not find project group with slug '$PROJECT_GROUP_SLUG'"
