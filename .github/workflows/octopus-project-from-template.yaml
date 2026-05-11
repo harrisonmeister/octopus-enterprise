@@ -206,44 +206,6 @@ jobs:
           echo "Production Environment ID: $ENVIRONMENT_ID"
 
       # -----------------------------------------------------------------------
-      # Set template parameter values
-      # -----------------------------------------------------------------------
-      - name: Set template parameter values
-        if: steps.check_project.outputs.exists != 'true'
-        run: |
-          PAYLOAD=$(jq -n \
-            --arg env  "${{ steps.environment.outputs.environment_id }}" \
-            --arg path "manifests/${{ inputs.project_name }}/*" \
-            --arg wp   "${{ steps.worker_pool.outputs.worker_pool_id }}" \
-            --arg tag  "$K8S_TARGET_TAG" \
-            '{
-              parameterValues: {
-                "ProjectTemplate.WorkerPool":              $wp,
-                "ProjectTemplate.Kubernetes.TargetTags":   $tag,
-                "ProjectTemplate.Approval.Environments":   $env,
-                "ProjectTemplate.Kubernetes.GitFilePaths": $path
-              }
-            }')
-
-          RESPONSE=$(curl -s -w "\n%{http_code}" \
-            -X PUT \
-            -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d "$PAYLOAD" \
-            "$OCTOPUS_URL/api/spaces/${{ steps.space.outputs.space_id }}/projects/${{ steps.create_project.outputs.project_id }}/template/parameters")
-
-          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
-          BODY=$(echo "$RESPONSE" | head -n -1)
-
-          if [ "$HTTP_CODE" -ge 400 ]; then
-            echo "ERROR: Failed to set template parameters (HTTP $HTTP_CODE)"
-            echo "$BODY" | jq .
-            exit 1
-          fi
-
-          echo "Template parameters set successfully"
-
-      # -----------------------------------------------------------------------
       # Check out the kubernetes-apps repo
       # -----------------------------------------------------------------------
       - name: Checkout kubernetes-apps repository
@@ -376,3 +338,41 @@ jobs:
 
           echo "Project converted to version control successfully"
           echo "BasePath: .octopus/${{ inputs.project_name }}"
+
+      # -----------------------------------------------------------------------
+      # Set template parameter values (must be after VCS conversion)
+      # -----------------------------------------------------------------------
+      - name: Set template parameter values
+        if: steps.check_project.outputs.exists != 'true'
+        run: |
+          PAYLOAD=$(jq -n \
+            --arg env  "${{ steps.environment.outputs.environment_id }}" \
+            --arg path "manifests/${{ inputs.project_name }}/*" \
+            --arg wp   "${{ steps.worker_pool.outputs.worker_pool_id }}" \
+            --arg tag  "$K8S_TARGET_TAG" \
+            '{
+              parameterValues: {
+                "ProjectTemplate.WorkerPool":              $wp,
+                "ProjectTemplate.Kubernetes.TargetTags":   $tag,
+                "ProjectTemplate.Approval.Environments":   $env,
+                "ProjectTemplate.Kubernetes.GitFilePaths": $path
+              }
+            }')
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -X PUT \
+            -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "$OCTOPUS_URL/api/spaces/${{ steps.space.outputs.space_id }}/projects/${{ steps.create_project.outputs.project_id }}/refs%2Fheads%2Fmain/template/parameters")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+
+          if [ "$HTTP_CODE" -ge 400 ]; then
+            echo "ERROR: Failed to set template parameters (HTTP $HTTP_CODE)"
+            echo "$BODY" | jq .
+            exit 1
+          fi
+
+          echo "Template parameters set successfully"
