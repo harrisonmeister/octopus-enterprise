@@ -1,4 +1,4 @@
-name: Delete Octopus Project
+name: Delete Octopus Templated Project
 
 on:
   workflow_dispatch:
