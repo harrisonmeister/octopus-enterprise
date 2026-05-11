@@ -286,7 +286,7 @@ jobs:
           echo "DEBUG: Project ID: ${{ steps.create_project.outputs.project_id }}"
 
           RESPONSE=$(curl -s -w "\n%{http_code}" \
-            -X PUT \
+            -X POST \
             -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"IconId":"anchor","IconColor":"#00874D"}' \
