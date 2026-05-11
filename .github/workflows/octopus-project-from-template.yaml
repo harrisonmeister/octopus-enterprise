@@ -281,19 +281,26 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Set project icon
         run: |
+          ICON_URL="$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/projects/${{ steps.create_project.outputs.project_id }}/logo/icon"
+          echo "DEBUG: PUT $ICON_URL"
+          echo "DEBUG: Project ID: ${{ steps.create_project.outputs.project_id }}"
+
           RESPONSE=$(curl -s -w "\n%{http_code}" \
             -X PUT \
             -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"IconId":"anchor","IconColor":"#00874D"}' \
-            "$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/projects/${{ steps.create_project.outputs.project_id }}/logo/icon")
+            "$ICON_URL")
 
           HTTP_CODE=$(echo "$RESPONSE" | tail -1)
           BODY=$(echo "$RESPONSE" | head -n -1)
 
+          echo "DEBUG: HTTP status: $HTTP_CODE"
+          echo "DEBUG: Response body:"
+          echo "$BODY" | jq . || echo "$BODY"
+
           if [ "$HTTP_CODE" -ge 400 ]; then
             echo "ERROR: Failed to set project icon (HTTP $HTTP_CODE)"
-            echo "$BODY" | jq .
             exit 1
           fi
 
