@@ -58,10 +58,30 @@ jobs:
           echo "Space ID: $SPACE_ID"
 
       # -----------------------------------------------------------------------
+      # Check if project already exists
+      # -----------------------------------------------------------------------
+      - name: Check if project exists
+        id: check_project
+        run: |
+          PROJECT_ID=$(curl -sf \
+            -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
+            "$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/projects?partialName=$(jq -rn --arg n '${{ inputs.project_name }}' '$n | @uri')" \
+            | jq -r --arg name "${{ inputs.project_name }}" '.Items[] | select(.Name == $name) | .Id')
+
+          if [ -n "$PROJECT_ID" ]; then
+            echo "Project '${{ inputs.project_name }}' already exists ($PROJECT_ID) — skipping creation"
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "Project '${{ inputs.project_name }}' does not exist — will create"
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      # -----------------------------------------------------------------------
       # Look up Project Group ID by name
       # -----------------------------------------------------------------------
       - name: Look up Project Group ID
         id: project_group
+        if: steps.check_project.outputs.exists != 'true'
         run: |
           PROJECT_GROUP_ID=$(curl -sf \
             -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
@@ -81,6 +101,7 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Look up Default Lifecycle ID
         id: lifecycle
+        if: steps.check_project.outputs.exists != 'true'
         run: |
           ENCODED_LC="${LIFECYCLE_NAME// /+}"
           LIFECYCLE_ID=$(curl -sf \
@@ -101,6 +122,7 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Create project
         id: create_project
+        if: steps.check_project.outputs.exists != 'true'
         run: |
           PAYLOAD=$(jq -n \
             --arg name "${{ inputs.project_name }}" \
@@ -147,6 +169,7 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Look up Worker Pool ID
         id: worker_pool
+        if: steps.check_project.outputs.exists != 'true'
         run: |
           ENCODED_WP="${WORKER_POOL_NAME// /+}"
           WORKER_POOL_ID=$(curl -sf \
@@ -167,6 +190,7 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Look up Production Environment ID
         id: environment
+        if: steps.check_project.outputs.exists != 'true'
         run: |
           ENVIRONMENT_ID=$(curl -sf \
             -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
@@ -185,6 +209,7 @@ jobs:
       # Set template parameter values
       # -----------------------------------------------------------------------
       - name: Set template parameter values
+        if: steps.check_project.outputs.exists != 'true'
         run: |
           PAYLOAD=$(jq -n \
             --arg env  "${{ steps.environment.outputs.environment_id }}" \
@@ -222,6 +247,7 @@ jobs:
       # Check out the kubernetes-apps repo
       # -----------------------------------------------------------------------
       - name: Checkout kubernetes-apps repository
+        if: steps.check_project.outputs.exists != 'true'
         uses: actions/checkout@v4
         with:
           repository: harrisonmeister/kubernetes-apps
@@ -232,6 +258,7 @@ jobs:
       # Create manifests/{project_name}/{project_name}.yaml from sample-app template
       # -----------------------------------------------------------------------
       - name: Create project manifest
+        if: steps.check_project.outputs.exists != 'true'
         run: |
           PROJECT_NAME="${{ inputs.project_name }}"
           TARGET_DIR="kubernetes-apps/manifests/$PROJECT_NAME"
@@ -249,6 +276,7 @@ jobs:
       # Commit and push to kubernetes-apps
       # -----------------------------------------------------------------------
       - name: Commit and push manifest
+        if: steps.check_project.outputs.exists != 'true'
         run: |
           cd kubernetes-apps
           git config user.name  "github-actions[bot]"
@@ -262,6 +290,7 @@ jobs:
       # -----------------------------------------------------------------------
       - name: Look up GitHub App Connection ID
         id: github_app
+        if: steps.check_project.outputs.exists != 'true'
         run: |
           CONNECTION_ID=$(curl -sf \
             -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
@@ -280,27 +309,21 @@ jobs:
       # Set project icon
       # -----------------------------------------------------------------------
       - name: Set project icon
+        if: steps.check_project.outputs.exists != 'true'
         run: |
-          ICON_URL="$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/projects/${{ steps.create_project.outputs.project_id }}/logo/icon"
-          echo "DEBUG: PUT $ICON_URL"
-          echo "DEBUG: Project ID: ${{ steps.create_project.outputs.project_id }}"
-
           RESPONSE=$(curl -s -w "\n%{http_code}" \
             -X POST \
             -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"IconId":"anchor","IconColor":"#00874D"}' \
-            "$ICON_URL")
+            "$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/projects/${{ steps.create_project.outputs.project_id }}/logo/icon")
 
           HTTP_CODE=$(echo "$RESPONSE" | tail -1)
           BODY=$(echo "$RESPONSE" | head -n -1)
 
-          echo "DEBUG: HTTP status: $HTTP_CODE"
-          echo "DEBUG: Response body:"
-          echo "$BODY" | jq . || echo "$BODY"
-
           if [ "$HTTP_CODE" -ge 400 ]; then
             echo "ERROR: Failed to set project icon (HTTP $HTTP_CODE)"
+            echo "$BODY" | jq .
             exit 1
           fi
 
@@ -310,6 +333,7 @@ jobs:
       # Convert project to version control
       # -----------------------------------------------------------------------
       - name: Convert project to version control
+        if: steps.check_project.outputs.exists != 'true'
         run: |
           PAYLOAD=$(jq -n \
             --arg project "${{ inputs.project_name }}" \
