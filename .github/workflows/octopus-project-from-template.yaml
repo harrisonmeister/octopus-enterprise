@@ -63,37 +63,13 @@ jobs:
       - name: Look up Project Group ID
         id: project_group
         run: |
-          API_URL="$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/projectgroups?partialName=Kubernetes"
-          echo "DEBUG: Fetching project groups from: $API_URL"
-          echo "DEBUG: Looking for slug: $PROJECT_GROUP_SLUG"
-
-          RAW_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
+          PROJECT_GROUP_ID=$(curl -sf \
             -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
-            "$API_URL")
-
-          HTTP_STATUS=$(echo "$RAW_RESPONSE" | tail -1 | sed 's/HTTP_STATUS://')
-          BODY=$(echo "$RAW_RESPONSE" | head -n -1)
-
-          echo "DEBUG: HTTP status: $HTTP_STATUS"
-          echo "DEBUG: Raw response:"
-          echo "$BODY" | jq . || echo "$BODY"
-
-          if [ "$HTTP_STATUS" -ge 400 ]; then
-            echo "ERROR: API call failed with HTTP $HTTP_STATUS"
-            exit 1
-          fi
-
-          echo "DEBUG: Items found:"
-          echo "$BODY" | jq -r '.Items[] | "\(.Id) | \(.Name) | \(.Slug)"'
-
-          PROJECT_GROUP_ID=$(echo "$BODY" \
+            "$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/projectgroups?partialName=Kubernetes" \
             | jq -r --arg slug "$PROJECT_GROUP_SLUG" '.Items[] | select(.Slug == $slug) | .Id')
 
-          echo "DEBUG: Matched PROJECT_GROUP_ID: '$PROJECT_GROUP_ID'"
-
-
           if [ -z "$PROJECT_GROUP_ID" ]; then
-            echo "ERROR: Could not find project group with slug '$PROJECT_GROUP_SLUG'"
+            echo "ERROR: Could not find project group '$PROJECT_GROUP_NAME'"
             exit 1
           fi
 
