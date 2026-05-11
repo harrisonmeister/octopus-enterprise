@@ -1,0 +1,324 @@
+name: Create Octopus Project from Template
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: "Name of the project to create"
+        required: true
+        type: string
+
+jobs:
+  create-project:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write   # Required for OIDC token request
+      contents: read
+
+    env:
+      OCTOPUS_URL:              ${{ vars.OCTOPUS_SERVER_URL }}
+      OCTOPUS_SPACE_NAME:       ${{ vars.OCTOPUS_SERVER_SPACE }}
+      GITHUB_CONNECTION_LOGIN:  harrisonmeister
+      K8S_TARGET_TAG:           demo-k8s-cluster
+      WORKER_POOL_NAME:         Hosted Ubuntu
+      PROJECT_TEMPLATE_SLUG:    mh-kubernetes-yaml-manifests
+      PROJECT_GROUP_NAME:       Kubernetes - YAML
+      LIFECYCLE_NAME:           Default Lifecycle
+
+    steps:
+      # -----------------------------------------------------------------------
+      # Login
+      # -----------------------------------------------------------------------
+      - name: Login to Octopus Deploy
+        uses: OctopusDeploy/login@v1
+        with:
+          server: ${{ env.OCTOPUS_URL }}
+          service_account_id: 4d50c8ac-1515-4351-96a7-4a82d55d55ff
+        # After this step, OCTOPUS_ACCESS_TOKEN is available as an env variable
+
+      # -----------------------------------------------------------------------
+      # Look up Space ID by name
+      # -----------------------------------------------------------------------
+      - name: Look up Space ID
+        id: space
+        run: |
+          ENCODED_SPACE="${OCTOPUS_SPACE_NAME// /+}"
+          SPACE_ID=$(curl -sf \
+            -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
+            "$OCTOPUS_URL/api/spaces?partialName=$ENCODED_SPACE" \
+            | jq -r --arg name "$OCTOPUS_SPACE_NAME" '.Items[] | select(.Name == $name) | .Id')
+
+          if [ -z "$SPACE_ID" ]; then
+            echo "ERROR: Could not find space '$OCTOPUS_SPACE_NAME'"
+            exit 1
+          fi
+
+          echo "space_id=$SPACE_ID" >> $GITHUB_OUTPUT
+          echo "Space ID: $SPACE_ID"
+
+      # -----------------------------------------------------------------------
+      # Look up Project Group ID by name
+      # -----------------------------------------------------------------------
+      - name: Look up Project Group ID
+        id: project_group
+        run: |
+          ENCODED_PG="${PROJECT_GROUP_NAME// /+}"
+          PROJECT_GROUP_ID=$(curl -sf \
+            -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
+            "$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/projectgroups?partialName=$ENCODED_PG" \
+            | jq -r --arg name "$PROJECT_GROUP_NAME" '.Items[] | select(.Name == $name) | .Id')
+
+          if [ -z "$PROJECT_GROUP_ID" ]; then
+            echo "ERROR: Could not find project group '$PROJECT_GROUP_NAME'"
+            exit 1
+          fi
+
+          echo "project_group_id=$PROJECT_GROUP_ID" >> $GITHUB_OUTPUT
+          echo "Project Group ID: $PROJECT_GROUP_ID"
+
+      # -----------------------------------------------------------------------
+      # Look up Default Lifecycle ID
+      # -----------------------------------------------------------------------
+      - name: Look up Default Lifecycle ID
+        id: lifecycle
+        run: |
+          ENCODED_LC="${LIFECYCLE_NAME// /+}"
+          LIFECYCLE_ID=$(curl -sf \
+            -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
+            "$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/lifecycles?partialName=$ENCODED_LC" \
+            | jq -r --arg name "$LIFECYCLE_NAME" '.Items[] | select(.Name == $name) | .Id')
+
+          if [ -z "$LIFECYCLE_ID" ]; then
+            echo "ERROR: Could not find lifecycle '$LIFECYCLE_NAME'"
+            exit 1
+          fi
+
+          echo "lifecycle_id=$LIFECYCLE_ID" >> $GITHUB_OUTPUT
+          echo "Lifecycle ID: $LIFECYCLE_ID"
+
+      # -----------------------------------------------------------------------
+      # Create the project from the process template
+      # -----------------------------------------------------------------------
+      - name: Create project
+        id: create_project
+        run: |
+          PAYLOAD=$(jq -n \
+            --arg name "${{ inputs.project_name }}" \
+            --arg pgid "${{ steps.project_group.outputs.project_group_id }}" \
+            --arg lcid "${{ steps.lifecycle.outputs.lifecycle_id }}" \
+            --arg slug "$PROJECT_TEMPLATE_SLUG" \
+            '{
+              Name:        $name,
+              Description: "",
+              ProjectGroupId: $pgid,
+              LifecycleId:    $lcid,
+              ProjectConnectivityPolicy: {
+                AllowDeploymentsToNoTargets: true
+              },
+              ProjectTemplateDetails: {
+                Slug:        $slug,
+                Version:     "1.1.0",
+                VersionMask: "1.X"
+              }
+            }')
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -X POST \
+            -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/projects")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+
+          if [ "$HTTP_CODE" -ne 201 ]; then
+            echo "ERROR: Failed to create project (HTTP $HTTP_CODE)"
+            echo "$BODY" | jq .
+            exit 1
+          fi
+
+          PROJECT_ID=$(echo "$BODY" | jq -r '.Id')
+          echo "project_id=$PROJECT_ID" >> $GITHUB_OUTPUT
+          echo "Project created: $PROJECT_ID"
+
+      # -----------------------------------------------------------------------
+      # Look up Worker Pool ID by name
+      # -----------------------------------------------------------------------
+      - name: Look up Worker Pool ID
+        id: worker_pool
+        run: |
+          ENCODED_WP="${WORKER_POOL_NAME// /+}"
+          WORKER_POOL_ID=$(curl -sf \
+            -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
+            "$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/workerpools?partialName=$ENCODED_WP" \
+            | jq -r --arg name "$WORKER_POOL_NAME" '.Items[] | select(.Name == $name) | .Id')
+
+          if [ -z "$WORKER_POOL_ID" ]; then
+            echo "ERROR: Could not find worker pool '$WORKER_POOL_NAME'"
+            exit 1
+          fi
+
+          echo "worker_pool_id=$WORKER_POOL_ID" >> $GITHUB_OUTPUT
+          echo "Worker Pool ID: $WORKER_POOL_ID"
+
+      # -----------------------------------------------------------------------
+      # Look up Production Environment ID
+      # -----------------------------------------------------------------------
+      - name: Look up Production Environment ID
+        id: environment
+        run: |
+          ENVIRONMENT_ID=$(curl -sf \
+            -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
+            "$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/environments?partialName=Production" \
+            | jq -r '.Items[] | select(.Name == "Production") | .Id')
+
+          if [ -z "$ENVIRONMENT_ID" ]; then
+            echo "ERROR: Could not find 'Production' environment"
+            exit 1
+          fi
+
+          echo "environment_id=$ENVIRONMENT_ID" >> $GITHUB_OUTPUT
+          echo "Production Environment ID: $ENVIRONMENT_ID"
+
+      # -----------------------------------------------------------------------
+      # Set template parameter values
+      # -----------------------------------------------------------------------
+      - name: Set template parameter values
+        run: |
+          PAYLOAD=$(jq -n \
+            --arg env  "${{ steps.environment.outputs.environment_id }}" \
+            --arg path "manifests/${{ inputs.project_name }}/*" \
+            --arg wp   "${{ steps.worker_pool.outputs.worker_pool_id }}" \
+            --arg tag  "$K8S_TARGET_TAG" \
+            '{
+              parameterValues: {
+                "ProjectTemplate.WorkerPool":              $wp,
+                "ProjectTemplate.Kubernetes.TargetTags":   $tag,
+                "ProjectTemplate.Approval.Environments":   $env,
+                "ProjectTemplate.Kubernetes.GitFilePaths": $path
+              }
+            }')
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -X PUT \
+            -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "$OCTOPUS_URL/api/spaces/${{ steps.space.outputs.space_id }}/projects/${{ steps.create_project.outputs.project_id }}/template/parameters")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+
+          if [ "$HTTP_CODE" -ge 400 ]; then
+            echo "ERROR: Failed to set template parameters (HTTP $HTTP_CODE)"
+            echo "$BODY" | jq .
+            exit 1
+          fi
+
+          echo "Template parameters set successfully"
+
+      # -----------------------------------------------------------------------
+      # Check out the kubernetes-apps repo
+      # -----------------------------------------------------------------------
+      - name: Checkout kubernetes-apps repository
+        uses: actions/checkout@v4
+        with:
+          repository: harrisonmeister/kubernetes-apps
+          token: ${{ secrets.GH_ACTIONS_PAT }}
+          path: kubernetes-apps
+
+      # -----------------------------------------------------------------------
+      # Create manifests/{project_name}/{project_name}.yaml from sample-app template
+      # -----------------------------------------------------------------------
+      - name: Create project manifest
+        run: |
+          PROJECT_NAME="${{ inputs.project_name }}"
+          TARGET_DIR="kubernetes-apps/manifests/$PROJECT_NAME"
+
+          mkdir -p "$TARGET_DIR"
+
+          sed "s/sample-app/$PROJECT_NAME/g" \
+            kubernetes-apps/manifests/sample-app/sample-app.yaml \
+            > "$TARGET_DIR/$PROJECT_NAME.yaml"
+
+          echo "Created $TARGET_DIR/$PROJECT_NAME.yaml"
+          cat "$TARGET_DIR/$PROJECT_NAME.yaml"
+
+      # -----------------------------------------------------------------------
+      # Commit and push to kubernetes-apps
+      # -----------------------------------------------------------------------
+      - name: Commit and push manifest
+        run: |
+          cd kubernetes-apps
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "manifests/${{ inputs.project_name }}/"
+          git commit -m "Add manifests for ${{ inputs.project_name }}"
+          git push
+
+      # -----------------------------------------------------------------------
+      # Look up GitHub App Connection ID by name
+      # -----------------------------------------------------------------------
+      - name: Look up GitHub App Connection ID
+        id: github_app
+        run: |
+          CONNECTION_ID=$(curl -sf \
+            -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
+            "$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/github/connections?skip=0&take=2147483647" \
+            | jq -r --arg login "$GITHUB_CONNECTION_LOGIN" '.Connections[] | select(.Installation.AccountLogin == $login) | .Id')
+
+          if [ -z "$CONNECTION_ID" ]; then
+            echo "ERROR: Could not find GitHub App connection for '$GITHUB_CONNECTION_LOGIN'"
+            exit 1
+          fi
+
+          echo "connection_id=$CONNECTION_ID" >> $GITHUB_OUTPUT
+          echo "GitHub App Connection ID: $CONNECTION_ID"
+
+      # -----------------------------------------------------------------------
+      # Convert project to version control
+      # -----------------------------------------------------------------------
+      - name: Convert project to version control
+        run: |
+          PAYLOAD=$(jq -n \
+            --arg project "${{ inputs.project_name }}" \
+            --arg connid  "${{ steps.github_app.outputs.connection_id }}" \
+            '{
+              CommitMessage: "Initial commit of project configuration",
+              VersionControlSettings: {
+                Type:          "VersionControlled",
+                Url:           "https://github.com/harrisonmeister/octopus-enterprise.git",
+                DefaultBranch: "main",
+                BasePath:      (".octopus/" + $project),
+                Credentials: {
+                  Type: "GitHub",
+                  Id:   $connid
+                },
+                ConversionState: {
+                  VariablesAreInGit: false,
+                  RunbooksAreInGit:  false
+                },
+                ProtectedDefaultBranch:     false,
+                ProtectedBranchNamePatterns: []
+              }
+            }')
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -X POST \
+            -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/projects/${{ steps.create_project.outputs.project_id }}/git/convert")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+
+          if [ "$HTTP_CODE" -ge 400 ]; then
+            echo "ERROR: Failed to convert project to version control (HTTP $HTTP_CODE)"
+            echo "$BODY" | jq .
+            exit 1
+          fi
+
+          echo "Project converted to version control successfully"
+          echo "BasePath: .octopus/${{ inputs.project_name }}"
