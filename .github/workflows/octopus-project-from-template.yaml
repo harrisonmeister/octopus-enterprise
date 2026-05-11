@@ -62,10 +62,10 @@ jobs:
       - name: Look up Project Group ID
         id: project_group
         run: |
-          ENCODED_PG="${PROJECT_GROUP_NAME// /+}"
+          PARTIAL_PG="${PROJECT_GROUP_NAME%% *}"
           PROJECT_GROUP_ID=$(curl -sf \
             -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
-            "$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/projectgroups?partialName=$ENCODED_PG" \
+            "$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/projectgroups?partialName=$PARTIAL_PG" \
             | jq -r --arg name "$PROJECT_GROUP_NAME" '.Items[] | select(.Name == $name) | .Id')
 
           if [ -z "$PROJECT_GROUP_ID" ]; then
