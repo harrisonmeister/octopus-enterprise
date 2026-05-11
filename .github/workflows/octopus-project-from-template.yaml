@@ -361,7 +361,7 @@ jobs:
 
           RESPONSE=$(curl -s -w "\n%{http_code}" \
             -X PUT \
-            -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
+            -H "X-Octopus-ApiKey: ${{ secrets.OCTOPUS_API_KEY }}" \
             -H "Content-Type: application/json" \
             -d "$PAYLOAD" \
             "$OCTOPUS_URL/api/spaces/${{ steps.space.outputs.space_id }}/projects/${{ steps.create_project.outputs.project_id }}/refs%2Fheads%2Fmain/template/parameters")
