@@ -40,6 +40,17 @@ step "update-aetherflow-kustomize-image-tags" {
                 SelectionMode = "immediate"
             }
         }
+
+        packages "nginx" {
+            acquisition_location = "NotAcquired"
+            feed = "docker-hub"
+            package_id = "nginx"
+            properties = {
+                Extract = "False"
+                Purpose = "DockerImageReference"
+                SelectionMode = "immediate"
+            }
+        }
     }
 }
 

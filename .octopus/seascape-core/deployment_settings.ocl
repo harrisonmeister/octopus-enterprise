@@ -5,6 +5,6 @@ connectivity_policy {
 versioning_strategy {
     donor_package {
         package = "seascape-core"
-        step = "update-seascape-core-image-tags"
+        step = "Update seascape-core image tags"
     }
 }
