@@ -6,13 +6,12 @@ on:
     paths:
       - 'goji-app/**'
       - '.github/workflows/goji-app-main.yml'
-
   workflow_dispatch:
-  
+
 env:
   OCTOPUS_URL: ${{ vars.OCTOPUS_SERVER_URL }}
   OCTOPUS_SPACE: ${{ vars.OCTOPUS_SERVER_SPACE }}
-       
+
 jobs:
   build:
     name: Package Kubernetes manifests 📦
@@ -22,10 +21,8 @@ jobs:
     defaults:
       run:
         working-directory: ./goji-app
-    
     outputs:
       version: ${{ steps.version-generator.outputs.version }}
-
     steps:
       - uses: actions/checkout@v4
 
@@ -33,11 +30,11 @@ jobs:
       - name: Set Version number
         id: version-generator
         run: echo "version=$(date +'%Y.%m.%d').$GITHUB_RUN_NUMBER" >> $GITHUB_OUTPUT
-      
+
       # Create artifacts folder
       - name: Create artifacts folder
         run: mkdir artifacts
-      
+
       # Package Manifest resources
       - name: Package manifests for Octopus 🐙
         uses: OctopusDeploy/create-zip-package-action@v3
@@ -48,16 +45,18 @@ jobs:
           base_path: ./goji-app/manifests
           files: |
             **/*.*
-      # Login to Octopus 
+
+      # Login to Octopus
       - name: Login to Octopus Deploy 🐙
         uses: OctopusDeploy/login@v1
-        with: 
+        with:
           server: ${{ env.OCTOPUS_URL }}
           service_account_id: 4d50c8ac-1515-4351-96a7-4a82d55d55ff
+
       # Push packages to Octopus repository
       - name: Push packages to Octopus 🐙
         uses: OctopusDeploy/push-package-action@v3
-        with:  
+        with:
           packages: |
             ./goji-app/artifacts/goji-app.${{ steps.version-generator.outputs.version }}.zip
 
@@ -68,15 +67,15 @@ jobs:
       id-token: write
     needs: [build]
     runs-on: ubuntu-latest
-
     steps:
-      # Login to Octopus 
+      # Login to Octopus
       - name: Login to Octopus Deploy 🐙
         uses: OctopusDeploy/login@v1
-        with: 
+        with:
           server: ${{ env.OCTOPUS_URL }}
           service_account_id: 4d50c8ac-1515-4351-96a7-4a82d55d55ff
-      # Push Build Info    
+
+      # Push Build Info
       - name: Push build information to Octopus Deploy 🐙
         uses: OctopusDeploy/push-build-information-action@v3
         with:
@@ -91,22 +90,21 @@ jobs:
       id-token: write
     needs: [build, push-build-info]
     runs-on: ubuntu-latest
-      
     steps:
-    # Login to Octopus 
-    - name: Login to Octopus Deploy 🐙
-      uses: OctopusDeploy/login@v1
-      with: 
-        server: ${{ env.OCTOPUS_URL }}
-        service_account_id: 4d50c8ac-1515-4351-96a7-4a82d55d55ff
-    - name: Create Octopus Release 🐙
-      uses: OctopusDeploy/create-release-action@v3
-      id: "create-release"
-      with:
-        project: "Goji"
-        release_number: ${{ needs.build.outputs.version }}
+      # Login to Octopus
+      - name: Login to Octopus Deploy 🐙
+        uses: OctopusDeploy/login@v1
+        with:
+          server: ${{ env.OCTOPUS_URL }}
+          service_account_id: 4d50c8ac-1515-4351-96a7-4a82d55d55ff
 
-    outputs: 
+      - name: Create Octopus Release 🐙
+        uses: OctopusDeploy/create-release-action@v3
+        id: "create-release"
+        with:
+          project: "Goji"
+          release_number: ${{ needs.build.outputs.version }}
+    outputs:
       release_number: ${{ steps.create-release.outputs.release_number }}
 
   deploy-octopus-release:
@@ -116,20 +114,76 @@ jobs:
       id-token: write
     needs: [build, push-build-info, create-octopus-release]
     runs-on: ubuntu-latest
-      
     steps:
-    # Login to Octopus 
-    - name: Login to Octopus Deploy 🐙
-      uses: OctopusDeploy/login@v1
-      with: 
-        server: ${{ env.OCTOPUS_URL }}
-        service_account_id: 4d50c8ac-1515-4351-96a7-4a82d55d55ff
-    - name: Deploy to Development 🐙
-      uses: OctopusDeploy/deploy-release-action@v3
-      id: "deploy-release"
-      with:
-        project: "Goji"
-        release_number: ${{ needs.create-octopus-release.outputs.release_number }}
-        environments: |
-          Development
-      
+      # Login to Octopus
+      - name: Login to Octopus Deploy 🐙
+        uses: OctopusDeploy/login@v1
+        with:
+          server: ${{ env.OCTOPUS_URL }}
+          service_account_id: 4d50c8ac-1515-4351-96a7-4a82d55d55ff
+
+      - name: Deploy to Development 🐙
+        uses: OctopusDeploy/deploy-release-action@v3
+        id: "deploy-release"
+        with:
+          project: "Goji"
+          release_number: ${{ needs.create-octopus-release.outputs.release_number }}
+          environments: |
+            Development
+
+      - name: Stream Octopus task logs 🐙
+        run: |
+          set +e
+
+          TASK_ID=$(echo '${{ steps.deploy-release.outputs.server_tasks }}' | jq -r '.[0].serverTaskId')
+          OCTOPUS_URL="${{ env.OCTOPUS_URL }}"
+          OCTOPUS_URL="${OCTOPUS_URL%/}"
+
+          ENCODED_SPACE="${{ env.OCTOPUS_SPACE }}"
+          ENCODED_SPACE="${ENCODED_SPACE// /+}"
+          SPACE_ID=$(curl -sf \
+            -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
+            "$OCTOPUS_URL/api/spaces?partialName=$ENCODED_SPACE" \
+            | jq -r --arg name "${{ env.OCTOPUS_SPACE }}" '.Items[] | select(.Name == $name) | .Id')
+
+          if [ -z "$SPACE_ID" ]; then
+            echo "ERROR: could not resolve space '${{ env.OCTOPUS_SPACE }}' to an ID" >&2
+            exit 1
+          fi
+
+          BASE_URL="$OCTOPUS_URL/api/$SPACE_ID"
+          PRINTED_LINES=0
+
+          while true; do
+            TASK_JSON=$(curl -sf \
+              -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
+              "$BASE_URL/tasks/$TASK_ID")
+            CURL_EXIT=$?
+
+            if [ $CURL_EXIT -ne 0 ] || [ -z "$TASK_JSON" ]; then
+              echo "ERROR: API call failed (curl exit $CURL_EXIT) for $BASE_URL/tasks/$TASK_ID" >&2
+              exit 1
+            fi
+
+            IS_COMPLETED=$(echo "$TASK_JSON" | jq -r '.IsCompleted // false')
+            TASK_STATE=$(echo   "$TASK_JSON" | jq -r '.State       // "Unknown"')
+
+            RAW_LOGS=$(curl -sf \
+              -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
+              "$BASE_URL/tasks/$TASK_ID/raw")
+
+            if [ -n "$RAW_LOGS" ]; then
+              CURRENT_LINES=$(echo "$RAW_LOGS" | wc -l)
+              if [ "$CURRENT_LINES" -gt "$PRINTED_LINES" ]; then
+                echo "$RAW_LOGS" | sed -n "$((PRINTED_LINES + 1)),${CURRENT_LINES}p"
+                PRINTED_LINES=$CURRENT_LINES
+              fi
+            fi
+
+            if [ "$IS_COMPLETED" = "true" ]; then
+              [ "$TASK_STATE" = "Success" ] || exit 1
+              break
+            fi
+
+            sleep 5
+          done
