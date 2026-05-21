@@ -29,7 +29,7 @@ step "mysql-create-database-if-not-exists" {
             createUseSSL = "True"
             mySqlAuthenticationMethod = "usernamepassword"
             Octopus.Action.Template.Id = "ActionTemplates-2548"
-            Octopus.Action.Template.Version = "7"
+            Octopus.Action.Template.Version = "9"
         }
         worker_pool = "hosted-ubuntu"
     }
