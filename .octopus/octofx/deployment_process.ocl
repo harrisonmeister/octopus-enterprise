@@ -124,6 +124,19 @@ step "deploy-trading-site" {
         worker_pool_variable = "OctoFX.WorkerPool"
     }
 
+    action "stop-trading-site-apppool" {
+        name = "Stop Trading Site AppPool"
+        properties = {
+            AppPoolCheckDelay = "500"
+            AppPoolCheckRetries = "20"
+            AppPoolName = "#{OctoFX.TradingSite.AppPoolName}"
+            Octopus.Action.RunOnServer = "false"
+            Octopus.Action.Template.Id = "ActionTemplates-6101"
+            Octopus.Action.Template.Version = "6"
+        }
+        worker_pool_variable = ""
+    }
+
     action "deploy-trading-site" {
         action_type = "Octopus.IIS"
         name = "Deploy Trading Site"
@@ -162,6 +175,17 @@ step "deploy-trading-site" {
                 SelectionMode = "immediate"
             }
         }
+    }
+
+    action "start-trading-site-apppool" {
+        name = "Start Trading Site AppPool"
+        properties = {
+            AppPoolName = "#{OctoFX.TradingSite.AppPoolName}"
+            Octopus.Action.RunOnServer = "false"
+            Octopus.Action.Template.Id = "ActionTemplates-6102"
+            Octopus.Action.Template.Version = "4"
+        }
+        worker_pool_variable = ""
     }
 
     action "smoke-test-trading-site" {
