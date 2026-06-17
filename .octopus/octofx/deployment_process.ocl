@@ -232,26 +232,3 @@ step "notify-status-of-deployment" {
         worker_pool = "hosted-ubuntu"
     }
 }
-
-process_template "run-a-process-template" {
-    name = "Run a Process Template"
-    process_template_slug = "dsc-verify-build-artifacts"
-    version_mask = "3.X"
-
-    package_parameter "Template.SBOM.Artifact" {
-        feed = "octopus-server-built-in"
-        package_id = "devicefirmware"
-    }
-
-    parameter "Template.Target.Tags" {
-        value = "argo-rollouts"
-    }
-
-    parameter "Template.Verify.WorkerPool" {
-        value = "WorkerPools-2665"
-    }
-
-    parameter "Template.Verify.ExecutionContainerFeed" {
-        value = "Feeds-3810"
-    }
-}
