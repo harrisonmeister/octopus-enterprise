@@ -22,11 +22,6 @@ variable "SnowGlobe.WorkerPool" {
 
 variable "SnowGlobe.WebApp.HttpPort" {
     value "5000" {}
-
-    value "5200" {
-        description = ""
-        environment = ["production"]
-    }
 }
 
 variable "SnowGlobe.WebApp.HttpsPort" {
