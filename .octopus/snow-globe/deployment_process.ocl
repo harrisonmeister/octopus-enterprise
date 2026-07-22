@@ -1,6 +1,6 @@
 step "manual-intervention-required" {
     condition = "Variable"
-    name = "Manual Intervention Required"
+    name = "Manual Approval Required"
     properties = {
         Octopus.Step.ConditionVariableExpression = "#{unless Octopus.Deployment.CreatedBy.Username == \"system\"}True#{/unless}"
     }
