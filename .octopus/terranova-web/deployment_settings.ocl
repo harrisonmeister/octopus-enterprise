@@ -4,9 +4,11 @@ release_notes_template = <<-EOT
         
         #### Commits:
         #{each package in Octopus.Release.Package}
+        #{if Octopus.Template.Each.First == "True"}
         #{each commit in package.Commits}
         - **Commit Message**: #{commit.Comment}
         #{/each}
+        #{/if}
         #{/each}
         
         #### Packages
