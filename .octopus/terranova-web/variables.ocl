@@ -10,22 +10,6 @@ variable "Project.HelmChart.GitRepository" {
     value "https://github.com/harrisonmeister/kubernetes-apps.git" {}
 }
 
-variable "Project.HelmChart.Namespace" {
-    value "terranova-web-prod" {
-        environment = ["production"]
-    }
-
-    value "terranova-web-test" {
-        environment = ["test"]
-    }
-
-    value "terranova-web-dev" {
-        environment = ["development"]
-    }
-
-    value "terranova-web-#{Octopus.Environment.Name | ToLower}" {}
-}
-
 variable "Project.ImageAttestations.DockerAccount" {
     type = "UsernamePasswordAccount"
 
@@ -36,4 +20,20 @@ variable "AwsAccount" {
     type = "AmazonWebServicesAccount"
 
     value "aws-account" {}
+}
+
+variable "Project.HelmChart.Namespace" {
+    value "terranova-web-#{Tenant.Namespace.Suffix}-prod" {
+        environment = ["production"]
+    }
+
+    value "terranova-web-#{Tenant.Namespace.Suffix}-test" {
+        environment = ["test"]
+    }
+
+    value "terranova-web-#{Tenant.Namespace.Suffix}-dev" {
+        environment = ["development"]
+    }
+
+    value "terranova-web-#{Tenant.Namespace.Suffix}-#{Octopus.Environment.Name | ToLower}" {}
 }
