@@ -37,3 +37,7 @@ variable "Project.HelmChart.Namespace" {
 
     value "terranova-web-#{Tenant.Namespace.Suffix}-#{Octopus.Environment.Name | ToLower}" {}
 }
+
+variable "Project.HelmChart.IngressHost" {
+    value "#{Tenant.IngressHost}" {}
+}
