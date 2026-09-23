@@ -20,7 +20,7 @@ step "notify-deployment-start" {
 process_template "verify-terranova-web-image" {
     name = "Verify terranova-web image"
     process_template_slug = "dsc-verify-build-artifacts-docker"
-    version_mask = "1.X"
+    version_mask = "3.X"
 
     package_parameter "Template.SBOM.Artifact" {
         feed = "octopus-server-built-in"
