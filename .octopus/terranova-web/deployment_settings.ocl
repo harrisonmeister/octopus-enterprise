@@ -8,7 +8,7 @@ release_notes_template = <<-EOT
         #{if Octopus.Template.Each.First == "True"}
         #### Commits:
         #{/if}
-        - **Commit Message**: #{commit.Comment}
+        - **Commit**: #{commit.Comment}
         #{/each}
         #{/if}
         #{/each}
