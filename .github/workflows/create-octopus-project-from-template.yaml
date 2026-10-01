@@ -25,6 +25,11 @@ jobs:
       PROJECT_GROUP_NAME:       Kubernetes - YAML
       PROJECT_GROUP_SLUG:       kubernetes-yaml
       LIFECYCLE_NAME:           Default Lifecycle
+      DEV_ENVIRONMENT_NAME:     Development
+      TEST_ENVIRONMENT_NAME:    Test
+      PROD_ENVIRONMENT_NAME:    Production
+      # Staging, not Production: a bug prevents using the same environment for approval and a lifecycle phase
+      APPROVAL_ENVIRONMENT_NAME: Staging
 
     steps:
       # -----------------------------------------------------------------------
@@ -139,8 +144,7 @@ jobs:
               },
               ProjectTemplateDetails: {
                 Slug:        $slug,
-                Version:     "1.1.0",
-                VersionMask: "1.X"
+                VersionMask: "2.X"
               }
             }')
 
@@ -186,24 +190,34 @@ jobs:
           echo "Worker Pool ID: $WORKER_POOL_ID"
 
       # -----------------------------------------------------------------------
-      # Look up Production Environment ID
+      # Look up Environment IDs (lifecycle phases + approval)
       # -----------------------------------------------------------------------
-      - name: Look up Production Environment ID
+      - name: Look up Environment IDs
         id: environment
         if: steps.check_project.outputs.exists != 'true'
         run: |
-          ENVIRONMENT_ID=$(curl -sf \
+          ENVIRONMENTS=$(curl -sf \
             -H "Authorization: Bearer $OCTOPUS_ACCESS_TOKEN" \
-            "$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/environments?partialName=Production" \
-            | jq -r '.Items[] | select(.Name == "Production") | .Id')
+            "$OCTOPUS_URL/api/${{ steps.space.outputs.space_id }}/environments/all")
 
-          if [ -z "$ENVIRONMENT_ID" ]; then
-            echo "ERROR: Could not find 'Production' environment"
-            exit 1
-          fi
+          lookup_env() {
+            local output="$1" name="$2"
+            local id
+            id=$(echo "$ENVIRONMENTS" | jq -r --arg name "$name" '.[] | select(.Name == $name) | .Id')
 
-          echo "environment_id=$ENVIRONMENT_ID" >> $GITHUB_OUTPUT
-          echo "Production Environment ID: $ENVIRONMENT_ID"
+            if [ -z "$id" ]; then
+              echo "ERROR: Could not find '$name' environment"
+              exit 1
+            fi
+
+            echo "$output=$id" >> $GITHUB_OUTPUT
+            echo "$name Environment ID: $id"
+          }
+
+          lookup_env dev_environment_id      "$DEV_ENVIRONMENT_NAME"
+          lookup_env test_environment_id     "$TEST_ENVIRONMENT_NAME"
+          lookup_env prod_environment_id     "$PROD_ENVIRONMENT_NAME"
+          lookup_env approval_environment_id "$APPROVAL_ENVIRONMENT_NAME"
 
       # -----------------------------------------------------------------------
       # Check out the kubernetes-apps repo
@@ -346,18 +360,22 @@ jobs:
         if: steps.check_project.outputs.exists != 'true'
         run: |
           PAYLOAD=$(jq -n \
-            --arg env  "${{ steps.environment.outputs.environment_id }}" \
-            --arg path "manifests/${{ inputs.project_name }}/*" \
-            --arg wp   "${{ steps.worker_pool.outputs.worker_pool_id }}" \
-            --arg tag  "$K8S_TARGET_TAG" \
-            '{
-              parameterValues: {
-                "ProjectTemplate.WorkerPool":              $wp,
-                "ProjectTemplate.Kubernetes.TargetTags":   $tag,
-                "ProjectTemplate.Approval.Environments":   $env,
-                "ProjectTemplate.Kubernetes.GitFilePaths": $path
-              }
-            }')
+            --arg wp       "${{ steps.worker_pool.outputs.worker_pool_id }}" \
+            --arg tag      "$K8S_TARGET_TAG" \
+            --arg approval "${{ steps.environment.outputs.approval_environment_id }}" \
+            --arg dev      "${{ steps.environment.outputs.dev_environment_id }}" \
+            --arg test     "${{ steps.environment.outputs.test_environment_id }}" \
+            --arg prod     "${{ steps.environment.outputs.prod_environment_id }}" \
+            --arg path     "manifests/${{ inputs.project_name }}/*" \
+            '[
+              { Type: "String", Name: "ProjectTemplate.WorkerPool",                Value: $wp },
+              { Type: "String", Name: "ProjectTemplate.Kubernetes.TargetTags",     Value: $tag },
+              { Type: "String", Name: "ProjectTemplate.Kubernetes.GitFilePaths",   Value: $path },
+              { Type: "String", Name: "ProjectTemplate.Approval.Environments",     Value: $approval },
+              { Type: "String", Name: "ProjectTemplate.Lifecycle.DevEnvs",         Value: $dev },
+              { Type: "String", Name: "ProjectTemplate.Lifecycle.TestEnvs",        Value: $test },
+              { Type: "String", Name: "ProjectTemplate.Lifecycle.ProdEnvs",        Value: $prod }
+            ]')
 
           RESPONSE=$(curl -s -w "\n%{http_code}" \
             -X PUT \
