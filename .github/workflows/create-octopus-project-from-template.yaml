@@ -367,15 +367,17 @@ jobs:
             --arg test     "${{ steps.environment.outputs.test_environment_id }}" \
             --arg prod     "${{ steps.environment.outputs.prod_environment_id }}" \
             --arg path     "manifests/${{ inputs.project_name }}/*" \
-            '[
-              { Type: "String", Name: "ProjectTemplate.WorkerPool",                Value: $wp },
-              { Type: "String", Name: "ProjectTemplate.Kubernetes.TargetTags",     Value: $tag },
-              { Type: "String", Name: "ProjectTemplate.Kubernetes.GitFilePaths",   Value: $path },
-              { Type: "String", Name: "ProjectTemplate.Approval.Environments",     Value: $approval },
-              { Type: "String", Name: "ProjectTemplate.Lifecycle.DevEnvs",         Value: $dev },
-              { Type: "String", Name: "ProjectTemplate.Lifecycle.TestEnvs",        Value: $test },
-              { Type: "String", Name: "ProjectTemplate.Lifecycle.ProdEnvs",        Value: $prod }
-            ]')
+            '{
+              ParameterValues: [
+                { Name: "ProjectTemplate.WorkerPool",              Type: "String", Value: $wp },
+                { Name: "ProjectTemplate.Kubernetes.TargetTags",   Type: "String", Value: $tag },
+                { Name: "ProjectTemplate.Approval.Environments",   Type: "String", Value: $approval },
+                { Name: "ProjectTemplate.Kubernetes.GitFilePaths", Type: "String", Value: $path },
+                { Name: "ProjectTemplate.Lifecycle.DevEnvs",       Type: "String", Value: $dev },
+                { Name: "ProjectTemplate.Lifecycle.TestEnvs",      Type: "String", Value: $test },
+                { Name: "ProjectTemplate.Lifecycle.ProdEnvs",      Type: "String", Value: $prod }
+              ]
+            }')
 
           RESPONSE=$(curl -s -w "\n%{http_code}" \
             -X PUT \
