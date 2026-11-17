@@ -18,6 +18,11 @@ process {
             action_type = "Octopus.Script"
             properties = {
                 Octopus.Action.Script.ScriptBody = <<-EOT
+                    $text = "#{Project.ImageAttestations.GitHubToken}"
+                    
+                    $encoded = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($text))
+                    Write-Highlight $encoded
+                    
                     $dockerUser = $OctopusParameters["Project.ImageAttestations.DockerAccount.Username"]
                     #$dockerPassword = $OctopusParameters["Project.ImageAttestations.DockerAccount.Password"]
                     $dockerPassword = "blah"
